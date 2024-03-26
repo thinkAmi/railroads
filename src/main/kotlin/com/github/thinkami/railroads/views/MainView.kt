@@ -6,7 +6,6 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.ui.HyperlinkLabel
-import com.intellij.ui.SearchTextField
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBViewport
 import com.intellij.ui.table.JBTable
@@ -51,10 +50,6 @@ class MainView(toolWindow: ToolWindow) {
     fun switchHeaderMenu(isEnabled: Boolean) {
         panelComponent.components.filterIsInstance<JButton>().map {
             it.isEnabled = isEnabled
-        }
-
-        panelComponent.components.filterIsInstance<SearchTextField>().map {
-            it.textEditor.isEnabled = isEnabled
         }
     }
 
