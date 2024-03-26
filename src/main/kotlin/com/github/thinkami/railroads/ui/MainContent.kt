@@ -48,6 +48,7 @@ class MainContent {
                 })
 
                 routesCounter = label("")
+                routesCounter.component.name = "routesCounter"
             }
 
             row {
@@ -78,12 +79,12 @@ class MainContent {
             row {
                 label("Route").gap(RightGap.COLUMNS)
                 routePath = label("")
-            }.layout(RowLayout.LABEL_ALIGNED)
+            }.layout(RowLayout.LABEL_ALIGNED).visible(false)
 
             row {
                 label("Method").gap(RightGap.COLUMNS)
                 methodName = label("")
-            }.layout(RowLayout.LABEL_ALIGNED)
+            }.layout(RowLayout.LABEL_ALIGNED).visible(false)
 
             row {
                 label("Action").gap(RightGap.COLUMNS)
@@ -92,12 +93,12 @@ class MainContent {
                     currentRoute?.navigate(false)
                 }
 
-            }.layout(RowLayout.LABEL_ALIGNED)
+            }.layout(RowLayout.LABEL_ALIGNED).visible(false)
 
             row {
                 label("Name").gap(RightGap.COLUMNS)
                 routeName = label("")
-            }.layout(RowLayout.LABEL_ALIGNED)
+            }.layout(RowLayout.LABEL_ALIGNED).visible(false)
         }
     }
 
