@@ -58,7 +58,7 @@ class MainContent {
                 table.fillsViewportHeight = true
 
                 // Adjust the width and height of the JBTable automatically
-                scrollCell(table).align(AlignX.FILL).align(AlignY.FILL)
+                scrollCell(table).align(AlignX.FILL).align(AlignY.FILL).visible(false)
 
                 // Event: Reflect the selected row to each label
                 table.selectionModel.addListSelectionListener {

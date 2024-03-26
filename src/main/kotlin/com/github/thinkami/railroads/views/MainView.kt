@@ -14,10 +14,10 @@ import javax.swing.JLabel
 
 class MainView(toolWindow: ToolWindow) {
     val panelComponent = toolWindow.component.components.filterIsInstance<DialogPanel>().first()
+    val scrollComponent = panelComponent.components.filterIsInstance<JBScrollPane>().first()
     val tableComponent: JBTable
 
     init {
-        val scrollComponent = panelComponent.components.filterIsInstance<JBScrollPane>().first()
         val viewportComponent = scrollComponent.components.filterIsInstance<JBViewport>().first {
             it.components.filterIsInstance<JBTable>().isNotEmpty()
         }
@@ -29,10 +29,15 @@ class MainView(toolWindow: ToolWindow) {
         ApplicationManager.getApplication().invokeLater {
             showRouteLabels()
             switchHeaderMenu(true)
+            switchRouteTable(true)
 
             val model = tableComponent.model as RoutesTableModel
             model.updateTableDataFromRoutes(routes)
         }
+    }
+
+    fun switchRouteTable(isVisible: Boolean) {
+        scrollComponent.isVisible = isVisible
     }
 
     fun showRouteLabels() {
