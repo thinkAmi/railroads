@@ -19,8 +19,13 @@ class RoutesTask(private val project: Project) : Task.Backgroundable(project, "t
     private lateinit var output: ProcessOutput
 
     override fun run(indicator: ProgressIndicator) {
+        val toolWindow = ToolWindowManager.getInstance(project).getToolWindow("Railroads") ?: return
+        val mainView = MainView(toolWindow)
+        mainView.switchHeaderMenuWithUiThread(false)
+
         val app = RailsApp.fromModule(module)
         if ((app == null) || (app.railsApplicationRoot == null)) {
+            mainView.switchHeaderMenuWithUiThread(true)
             return
         }
 
@@ -29,7 +34,12 @@ class RoutesTask(private val project: Project) : Task.Backgroundable(project, "t
 
         val moduleContentRoot = app.railsApplicationRoot!!.presentableUrl
         val manager = ModuleRootManager.getInstance(module)
-        val sdk = manager.sdk ?: return
+
+        if (manager.sdk == null) {
+            mainView.switchHeaderMenuWithUiThread(true)
+            return
+        }
+        val sdk = manager.sdk!!
 
         indicator.fraction = 0.5
         indicator.text = "Before rails routes"
@@ -55,6 +65,6 @@ class RoutesTask(private val project: Project) : Task.Backgroundable(project, "t
         val routes = RailsRoutesParser(module).parse(output.stdout)
 
         val toolWindow = ToolWindowManager.getInstance(project).getToolWindow("Railroads") ?: return
-        MainView(toolWindow).renderRoutes(routes)
+        MainView(toolWindow).renderRoutesWithUiThread(routes)
     }
 }

@@ -6,9 +6,11 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.ui.HyperlinkLabel
+import com.intellij.ui.SearchTextField
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBViewport
 import com.intellij.ui.table.JBTable
+import javax.swing.JButton
 import javax.swing.JLabel
 
 class MainView(toolWindow: ToolWindow) {
@@ -24,9 +26,10 @@ class MainView(toolWindow: ToolWindow) {
     }
 
 
-    fun renderRoutes(routes: List<BaseRoute>) {
+    fun renderRoutesWithUiThread(routes: List<BaseRoute>) {
         ApplicationManager.getApplication().invokeLater {
             showRouteLabels()
+            switchHeaderMenu(true)
 
             val model = tableComponent.model as RoutesTableModel
             model.updateTableDataFromRoutes(routes)
@@ -42,6 +45,22 @@ class MainView(toolWindow: ToolWindow) {
 
         panelComponent.components.filterIsInstance<HyperlinkLabel>().map {
             it.isVisible = true
+        }
+    }
+
+    fun switchHeaderMenu(isEnabled: Boolean) {
+        panelComponent.components.filterIsInstance<JButton>().map {
+            it.isEnabled = isEnabled
+        }
+
+        panelComponent.components.filterIsInstance<SearchTextField>().map {
+            it.textEditor.isEnabled = isEnabled
+        }
+    }
+
+    fun switchHeaderMenuWithUiThread(isEnabled: Boolean) {
+        ApplicationManager.getApplication().invokeLater {
+            switchHeaderMenu(isEnabled)
         }
     }
 }
