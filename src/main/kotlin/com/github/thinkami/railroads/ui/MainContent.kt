@@ -22,6 +22,9 @@ class MainContent {
     private lateinit var routeName: Cell<JLabel>
     private lateinit var pathFilter: Cell<SearchTextField>
     private lateinit var routesCounter: Cell<JLabel>
+    private lateinit var runRailsRoutesMessage: Cell<JLabel>
+    private lateinit var loadingMessage: Cell<JLabel>
+    private lateinit var raiseErrorMessage: Cell<JLabel>
     private var currentRoute: BaseRoute? = null
 
     var content: DialogPanel
@@ -99,6 +102,21 @@ class MainContent {
                 label("Name").gap(RightGap.COLUMNS)
                 routeName = label("")
             }.layout(RowLayout.LABEL_ALIGNED).visible(false)
+
+            row {
+                runRailsRoutesMessage = label("Please run rails routes").align(AlignX.CENTER).align(AlignY.CENTER)
+                runRailsRoutesMessage.component.name = "runRailsRoutesMessage"
+            }.topGap(TopGap.MEDIUM).bottomGap(BottomGap.MEDIUM).resizableRow()
+
+            row {
+                loadingMessage = label("Loading...").align(AlignX.CENTER).align(AlignY.CENTER)
+                loadingMessage.component.name = "loadingMessage"
+            }.topGap(TopGap.MEDIUM).bottomGap(BottomGap.MEDIUM).resizableRow().visible(false)
+
+            row {
+                raiseErrorMessage = label("An error has occurred, please check Notification").align(AlignX.CENTER).align(AlignY.CENTER)
+                raiseErrorMessage.component.name = "raiseErrorMessage"
+            }.topGap(TopGap.MEDIUM).bottomGap(BottomGap.MEDIUM).resizableRow().visible(false)
         }
     }
 

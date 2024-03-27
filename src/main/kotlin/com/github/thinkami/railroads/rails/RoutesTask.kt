@@ -4,6 +4,9 @@ import com.github.thinkami.railroads.parser.RailsRoutesParser
 import com.github.thinkami.railroads.views.MainView
 import com.intellij.execution.ExecutionModes
 import com.intellij.execution.process.ProcessOutput
+import com.intellij.notification.Notification
+import com.intellij.notification.NotificationType
+import com.intellij.notification.Notifications
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
@@ -21,11 +24,11 @@ class RoutesTask(private val project: Project) : Task.Backgroundable(project, "t
     override fun run(indicator: ProgressIndicator) {
         val toolWindow = ToolWindowManager.getInstance(project).getToolWindow("Railroads") ?: return
         val mainView = MainView(toolWindow)
-        mainView.switchHeaderMenuWithUiThread(false)
+        mainView.renderLoadingWithUiThread()
 
         val app = RailsApp.fromModule(module)
         if ((app == null) || (app.railsApplicationRoot == null)) {
-            mainView.switchHeaderMenuWithUiThread(true)
+            mainView.renderDefaultWithUiThread()
             return
         }
 
@@ -36,7 +39,7 @@ class RoutesTask(private val project: Project) : Task.Backgroundable(project, "t
         val manager = ModuleRootManager.getInstance(module)
 
         if (manager.sdk == null) {
-            mainView.switchHeaderMenuWithUiThread(true)
+            mainView.renderDefaultWithUiThread()
             return
         }
         val sdk = manager.sdk!!
@@ -57,14 +60,28 @@ class RoutesTask(private val project: Project) : Task.Backgroundable(project, "t
         if (result != null) {
             output = result
         }
-
-        println(output.stdout)
     }
 
     override fun onSuccess() {
-        val routes = RailsRoutesParser(module).parse(output.stdout)
-
         val toolWindow = ToolWindowManager.getInstance(project).getToolWindow("Railroads") ?: return
+
+        if (output.stderr.isNotBlank()) {
+            val notification = Notification(
+                "railroadsNotification",
+                "Railroads Error: fail rails routes",
+                output.stderr,
+                NotificationType.ERROR
+            )
+            Notifications.Bus.notify(notification)
+            MainView(toolWindow).renderErrorWithUiThread()
+            return
+        }
+
+        val routes = RailsRoutesParser(module).parse(output.stdout)
         MainView(toolWindow).renderRoutesWithUiThread(routes)
+    }
+
+    override fun onThrowable(error: Throwable) {
+        println(output.stderr)
     }
 }

@@ -24,12 +24,45 @@ class MainView(toolWindow: ToolWindow) {
         tableComponent = viewportComponent.components.filterIsInstance<JBTable>().first()
     }
 
+    fun renderDefaultWithUiThread() {
+        ApplicationManager.getApplication().invokeLater {
+            switchHeaderMenu(true)
+            switchRouteTable(false)
+            switchRouteLabels(false)
+            switchRunRailsRoutesMessage(true)
+            switchLoadingMessage(false)
+            switchRaiseErrorMessage(false)
+        }
+    }
+
+    fun renderLoadingWithUiThread() {
+        ApplicationManager.getApplication().invokeLater {
+            switchHeaderMenu(false)
+            switchRouteTable(false)
+            switchRouteLabels(false)
+            switchRunRailsRoutesMessage(false)
+            switchLoadingMessage(true)
+            switchRaiseErrorMessage(false)
+        }
+    }
+
+    fun renderErrorWithUiThread() {
+        switchHeaderMenu(true)
+        switchRouteTable(false)
+        switchRouteLabels(false)
+        switchRunRailsRoutesMessage(false)
+        switchLoadingMessage(false)
+        switchRaiseErrorMessage(true)
+    }
 
     fun renderRoutesWithUiThread(routes: List<BaseRoute>) {
         ApplicationManager.getApplication().invokeLater {
-            showRouteLabels()
             switchHeaderMenu(true)
             switchRouteTable(true)
+            switchRouteLabels(true)
+            switchRunRailsRoutesMessage(false)
+            switchLoadingMessage(false)
+            switchRaiseErrorMessage(false)
 
             val model = tableComponent.model as RoutesTableModel
             model.updateTableDataFromRoutes(routes)
@@ -40,11 +73,35 @@ class MainView(toolWindow: ToolWindow) {
         scrollComponent.isVisible = isVisible
     }
 
-    fun showRouteLabels() {
+    fun switchRunRailsRoutesMessage(isVisible: Boolean) {
         panelComponent.components.filterIsInstance<JLabel>().filter {
-            it.name != "routesCounter"
+            it.name == "runRailsRoutesMessage"
         }.map {
-            it.isVisible = true
+            it.isVisible = isVisible
+        }
+    }
+
+    fun switchLoadingMessage(isVisible: Boolean) {
+        panelComponent.components.filterIsInstance<JLabel>().filter {
+            it.name == "loadingMessage"
+        }.map {
+            it.isVisible = isVisible
+        }
+    }
+
+    fun switchRaiseErrorMessage(isVisible: Boolean) {
+        panelComponent.components.filterIsInstance<JLabel>().filter {
+            it.name == "raiseErrorMessage"
+        }.map {
+            it.isVisible = isVisible
+        }
+    }
+
+    fun switchRouteLabels(isVisible: Boolean) {
+        panelComponent.components.filterIsInstance<JLabel>().filter {
+            it.name != "routesCounter" && it.name != "runRailsRoutesMessage"
+        }.map {
+            it.isVisible = isVisible
         }
 
         panelComponent.components.filterIsInstance<HyperlinkLabel>().map {
@@ -55,12 +112,6 @@ class MainView(toolWindow: ToolWindow) {
     fun switchHeaderMenu(isEnabled: Boolean) {
         panelComponent.components.filterIsInstance<JButton>().map {
             it.isEnabled = isEnabled
-        }
-    }
-
-    fun switchHeaderMenuWithUiThread(isEnabled: Boolean) {
-        ApplicationManager.getApplication().invokeLater {
-            switchHeaderMenu(isEnabled)
         }
     }
 }

@@ -9,5 +9,6 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow factoryClass="com.github.thinkami.railroads.toolWindow.RailroadsToolWindow" id="Railroads" anchor="right"/>
+        <notificationGroup displayType="BALLOON" id="railroadsNotification" />
     </extensions>
 </idea-plugin>
