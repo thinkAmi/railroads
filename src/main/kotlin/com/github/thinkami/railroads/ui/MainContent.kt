@@ -49,8 +49,9 @@ class MainContent {
                     }
 
                 })
+                pathFilter.align(AlignX.FILL).resizableColumn()
 
-                routesCounter = label("")
+                routesCounter = label("--/--")
                 routesCounter.component.name = "routesCounter"
             }
 
