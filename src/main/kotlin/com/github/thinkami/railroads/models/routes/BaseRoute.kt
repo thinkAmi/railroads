@@ -13,6 +13,8 @@ open class BaseRoute(
     var controllerName: String,
     var actionName: String
 ): NavigationItem {
+    private val FORMAT_STR = "(.:format)"
+
     override fun getName(): String? {
         return routePath
     }
@@ -58,4 +60,21 @@ open class BaseRoute(
         return false
     }
 
+    fun getRoutePathWithoutRequestFormat(): String {
+        val endIndex = routePath.length - FORMAT_STR.length
+        if (routePath.indexOf(FORMAT_STR) == endIndex) {
+            return routePath.substring(0, endIndex)
+        }
+        return routePath
+    }
+
+    fun getRoutePathWithMethod(): String {
+        val path = getRoutePathWithoutRequestFormat()
+
+        if (requestMethod == "Any") {
+            return path
+        }
+
+        return "$requestMethod $path"
+    }
 }

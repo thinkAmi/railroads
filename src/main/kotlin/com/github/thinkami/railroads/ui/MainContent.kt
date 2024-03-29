@@ -56,7 +56,7 @@ class MainContent {
             }
 
             row {
-                table = JBTable()
+                table = RoutesTable()
                 table.model = routesTableModel
                 table.autoResizeMode = JBTable.AUTO_RESIZE_ALL_COLUMNS
                 table.fillsViewportHeight = true

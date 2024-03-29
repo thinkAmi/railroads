@@ -11,4 +11,22 @@
         <toolWindow factoryClass="com.github.thinkami.railroads.toolWindow.RailroadsToolWindow" id="Railroads" anchor="right"/>
         <notificationGroup displayType="BALLOON" id="railroadsNotification" />
     </extensions>
+    
+    <actions>
+        <action class="com.github.thinkami.railroads.actions.CopyRouteNameAction"
+                id="railroads.copyRouteName"
+                text="Copy Name" />
+        <action class="com.github.thinkami.railroads.actions.CopyRoutePathAction"
+                id="railroads.copyRoutPath"
+                text="Copy Path" />
+        <action class="com.github.thinkami.railroads.actions.CopyRouteFullPathAction"
+                id="railroads.copyRouteFullPath"
+                text="Copy Full Path" />
+
+        <group id="railroads.PopupMenu">
+            <reference ref="railroads.copyRouteName" />
+            <reference ref="railroads.copyRouteFullPath" />
+            <reference ref="railroads.copyRoutPath" />
+        </group>
+    </actions>
 </idea-plugin>
