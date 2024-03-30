@@ -2,7 +2,9 @@ package com.github.thinkami.railroads.models.routes
 
 import com.github.thinkami.railroads.helper.PsiUtil
 import com.github.thinkami.railroads.models.RailsAction
+import com.github.thinkami.railroads.ui.RailroadIcon
 import com.intellij.openapi.module.Module
+import javax.swing.Icon
 
 class SimpleRoute(
     module: Module,
@@ -32,6 +34,10 @@ class SimpleRoute(
         return railsAction.psiMethod != null || railsAction.psiClass != null
     }
 
+    override fun methodExists(): Boolean {
+        return railsAction.psiMethod != null
+    }
+
     override fun getActionTitle(): String {
         if (controllerName.isNotBlank()) {
             return "$controllerName#$actionName"
@@ -40,7 +46,7 @@ class SimpleRoute(
     }
 
     override fun getQualifiedActionTitle(): String {
-        // railways
+        // (railways)
         // Return unqualified action title in case controller is specified as
         // parameter (ex. :controller#:action)
         if (controllerName.contains(":")) {
@@ -51,5 +57,17 @@ class SimpleRoute(
         val controllerClassName = if (controllerClass != null) controllerClass.qualifiedName else PsiUtil.getControllerClassNameByShortName(controllerName)
 
         return "$controllerClassName#$actionName"
+    }
+
+    override fun getActionIcon(): Icon {
+        if (railsAction.psiMethod != null) {
+            return railsAction.getIcon()
+        }
+
+        if (railsAction.psiClass != null) {
+            return RailroadIcon.NodeController
+        }
+
+        return RailroadIcon.Unknown
     }
 }

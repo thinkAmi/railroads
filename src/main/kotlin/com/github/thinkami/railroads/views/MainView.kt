@@ -13,9 +13,9 @@ import javax.swing.JButton
 import javax.swing.JLabel
 
 class MainView(toolWindow: ToolWindow) {
-    val panelComponent = toolWindow.component.components.filterIsInstance<DialogPanel>().first()
-    val scrollComponent = panelComponent.components.filterIsInstance<JBScrollPane>().first()
-    val tableComponent: JBTable
+    private val panelComponent = toolWindow.component.components.filterIsInstance<DialogPanel>().first()
+    private val scrollComponent = panelComponent.components.filterIsInstance<JBScrollPane>().first()
+    private val tableComponent: JBTable
 
     init {
         val viewportComponent = scrollComponent.components.filterIsInstance<JBViewport>().first {
@@ -69,11 +69,11 @@ class MainView(toolWindow: ToolWindow) {
         }
     }
 
-    fun switchRouteTable(isVisible: Boolean) {
+    private fun switchRouteTable(isVisible: Boolean) {
         scrollComponent.isVisible = isVisible
     }
 
-    fun switchRunRailsRoutesMessage(isVisible: Boolean) {
+    private fun switchRunRailsRoutesMessage(isVisible: Boolean) {
         panelComponent.components.filterIsInstance<JLabel>().filter {
             it.name == "runRailsRoutesMessage"
         }.map {
@@ -81,7 +81,7 @@ class MainView(toolWindow: ToolWindow) {
         }
     }
 
-    fun switchLoadingMessage(isVisible: Boolean) {
+    private fun switchLoadingMessage(isVisible: Boolean) {
         panelComponent.components.filterIsInstance<JLabel>().filter {
             it.name == "loadingMessage"
         }.map {
@@ -89,7 +89,7 @@ class MainView(toolWindow: ToolWindow) {
         }
     }
 
-    fun switchRaiseErrorMessage(isVisible: Boolean) {
+    private fun switchRaiseErrorMessage(isVisible: Boolean) {
         panelComponent.components.filterIsInstance<JLabel>().filter {
             it.name == "raiseErrorMessage"
         }.map {
@@ -97,7 +97,7 @@ class MainView(toolWindow: ToolWindow) {
         }
     }
 
-    fun switchRouteLabels(isVisible: Boolean) {
+    private fun switchRouteLabels(isVisible: Boolean) {
         panelComponent.components.filterIsInstance<JLabel>().filter {
             it.name != "routesCounter" && it.name != "runRailsRoutesMessage"
         }.map {
@@ -105,11 +105,11 @@ class MainView(toolWindow: ToolWindow) {
         }
 
         panelComponent.components.filterIsInstance<HyperlinkLabel>().map {
-            it.isVisible = true
+            it.isVisible = isVisible
         }
     }
 
-    fun switchHeaderMenu(isEnabled: Boolean) {
+    private fun switchHeaderMenu(isEnabled: Boolean) {
         panelComponent.components.filterIsInstance<JButton>().map {
             it.isEnabled = isEnabled
         }

@@ -1,4 +1,4 @@
-package com.github.thinkami.railroads.ui
+package com.github.thinkami.railroads.ui.table
 
 import com.github.thinkami.railroads.models.RoutesTableModel
 import com.github.thinkami.railroads.models.routes.BaseRoute

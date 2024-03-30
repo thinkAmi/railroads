@@ -21,12 +21,14 @@ class RoutesTableModel: AbstractTableModel() {
         return columns.size
     }
 
-    override fun getValueAt(rowIndex: Int, columnIndex: Int): String {
+    override fun getValueAt(rowIndex: Int, columnIndex: Int): Any {
         val route = filteredRoutes[rowIndex]
+
+        // routeAction return route objects to use a custom renderer
         return when(columnIndex) {
             0 -> route.requestMethod
             1 -> route.routePath
-            2 -> route.actionName
+            2 -> route
             3 -> route.routeName
             else -> {""}
         }

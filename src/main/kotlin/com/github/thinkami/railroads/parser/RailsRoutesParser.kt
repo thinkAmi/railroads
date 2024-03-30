@@ -98,9 +98,8 @@ class RailsRoutesParser(private val module: Module) {
             if (mountedEngineController.isNotBlank()) {
                 return MountedEngineRoute(module, requestMethod, routePath, routeName, mountedEngineController)
             }
-
-            return null
         }
+
         if (redirectPath.isNotBlank()) {
             return RedirectRoute(module, requestMethod, routePath, routeName, redirectPath)
         }

@@ -1,6 +1,8 @@
 package com.github.thinkami.railroads.models.routes
 
+import com.github.thinkami.railroads.ui.RailroadIcon
 import com.intellij.openapi.module.Module
+import javax.swing.Icon
 
 class RedirectRoute(
     module: Module,
@@ -32,4 +34,7 @@ class RedirectRoute(
         return if (redirectPath.isBlank()) "[runtime define redirect]" else "redirect to $redirectPath"
     }
 
+    override fun getActionIcon(): Icon {
+        return RailroadIcon.NodeRedirect
+    }
 }

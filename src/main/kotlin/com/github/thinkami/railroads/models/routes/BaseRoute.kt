@@ -1,5 +1,6 @@
 package com.github.thinkami.railroads.models.routes
 
+import com.github.thinkami.railroads.ui.RailroadIcon
 import com.intellij.navigation.ItemPresentation
 import com.intellij.navigation.NavigationItem
 import com.intellij.openapi.module.Module
@@ -76,5 +77,13 @@ open class BaseRoute(
         }
 
         return "$requestMethod $path"
+    }
+
+    open fun getActionIcon(): Icon {
+        return RailroadIcon.Unknown
+    }
+
+    open fun methodExists(): Boolean {
+        return false
     }
 }

@@ -3,6 +3,8 @@ package com.github.thinkami.railroads.ui
 import com.github.thinkami.railroads.actions.RailsRouteAction
 import com.github.thinkami.railroads.models.RoutesTableModel
 import com.github.thinkami.railroads.models.routes.BaseRoute
+import com.github.thinkami.railroads.ui.table.ActionCellRenderer
+import com.github.thinkami.railroads.ui.table.RoutesTable
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.ui.HyperlinkLabel
 import com.intellij.ui.SearchTextField
@@ -78,6 +80,10 @@ class MainContent {
                 table.model.addTableModelListener {
                     updateCounter()
                 }
+
+                // add custom renderer for icon and color
+                table.columnModel.getColumn(2).cellRenderer = ActionCellRenderer()
+
             }.resizableRow()
 
             row {
