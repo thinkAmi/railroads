@@ -1,4 +1,4 @@
-package com.github.thinkami.railroads.rails
+package com.github.thinkami.railroads.models.tasks
 
 import com.github.thinkami.railroads.parser.RailsRoutesParser
 import com.github.thinkami.railroads.views.MainView
@@ -13,6 +13,7 @@ import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.modules
 import com.intellij.openapi.roots.ModuleRootManager
+import com.intellij.openapi.ui.MessageType
 import com.intellij.openapi.wm.ToolWindowManager
 import org.jetbrains.plugins.ruby.gem.RubyGemExecutionContext
 import org.jetbrains.plugins.ruby.rails.model.RailsApp
@@ -45,7 +46,7 @@ class RoutesTask(private val project: Project) : Task.Backgroundable(project, "t
         val sdk = manager.sdk!!
 
         indicator.fraction = 0.5
-        indicator.text = "Before rails routes"
+        indicator.text = "Running rails routes..."
 
         val result = RubyGemExecutionContext.create(sdk, "rails")
             .withModule(module)
@@ -54,12 +55,12 @@ class RoutesTask(private val project: Project) : Task.Backgroundable(project, "t
             .withArguments("routes", "--trace")
             .executeScript()
 
-        indicator.fraction = 1.0
-        indicator.text = "After rails routes"
-
         if (result != null) {
             output = result
         }
+
+        indicator.fraction = 1.0
+        indicator.text = "Done rails routes"
     }
 
     override fun onSuccess() {
@@ -79,6 +80,12 @@ class RoutesTask(private val project: Project) : Task.Backgroundable(project, "t
 
         val routes = RailsRoutesParser(module).parse(output.stdout)
         MainView(toolWindow).renderRoutesWithUiThread(routes)
+
+        ToolWindowManager.getInstance(project).notifyByBalloon(
+            "Railroads",
+            MessageType.INFO,
+            "Finished rails routes"
+        )
     }
 
     override fun onThrowable(error: Throwable) {

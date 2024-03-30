@@ -1,6 +1,6 @@
 package com.github.thinkami.railroads.actions
 
-import com.github.thinkami.railroads.rails.RoutesTask
+import com.github.thinkami.railroads.models.tasks.RoutesTask
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 

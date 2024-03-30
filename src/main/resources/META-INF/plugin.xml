@@ -8,7 +8,11 @@
     <depends>com.intellij.modules.platform</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow factoryClass="com.github.thinkami.railroads.toolWindow.RailroadsToolWindow" id="Railroads" anchor="right"/>
+        <toolWindow factoryClass="com.github.thinkami.railroads.toolWindow.RailroadsToolWindow"
+                    id="Railroads"
+                    anchor="right"
+                    icon="RubyIcons.Rails.Rails"
+        />
         <notificationGroup displayType="BALLOON" id="railroadsNotification" />
     </extensions>
     
