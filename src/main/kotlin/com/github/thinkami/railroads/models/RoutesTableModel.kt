@@ -46,7 +46,7 @@ class RoutesTableModel: AbstractTableModel() {
 
     fun resourceChanged() {
         filteredRoutes = allRoutes.filter {
-            it.routePath.contains(this.tableFilter.filterText)
+            tableFilter.match(it)
         }
 
         this.fireTableDataChanged()
