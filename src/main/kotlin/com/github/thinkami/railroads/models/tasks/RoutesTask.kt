@@ -66,7 +66,15 @@ class RoutesTask(private val project: Project) : Task.Backgroundable(project, "t
     override fun onSuccess() {
         val toolWindow = ToolWindowManager.getInstance(project).getToolWindow("Railroads") ?: return
 
-        if (output.stderr.isNotBlank()) {
+        // (base comment: railways from parseRakeRouteOutput in RoutesManager.java)
+        // After routes parsing we can have several situations:
+        // 1. output.stdout is not blank and output.stderr is blank. Everything is OK.
+        // 2. output.stdout is blank and output.stderr is not blank. It means that there was an exception thrown.
+        // 3. output.stdout is not blank and output.stderr is not blank. In the most cases it's warnings (deprecation etc),
+        //    so everything is OK.
+        // TODO: possibly, we should report about warnings somehow.
+
+        if (output.stdout.isBlank() && output.stderr.isNotBlank()) {
             val notification = Notification(
                 "railroadsNotification",
                 "Railroads Error: fail rails routes",
