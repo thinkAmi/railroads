@@ -34,8 +34,8 @@ class RailsRoutesParser(private val module: Module) {
             // https://stackoverflow.com/questions/41000584/best-way-to-use-bufferedreader-in-kotlin
             DataInputStream(stream).bufferedReader().forEachLine {
                 val r = parseLine(it)
-                if (r != null) {
-                    result.add(r)
+                if (r.size > 0) {
+                    result.addAll(r)
                 }
             }
         } catch (e: IOException) {
@@ -45,30 +45,29 @@ class RailsRoutesParser(private val module: Module) {
         return result
     }
 
-    fun parseLine(line: String): BaseRoute? {
+    fun parseLine(line: String): MutableList<BaseRoute> {
         if (hasIgnorableValues(line)) {
-            return null
+            return mutableListOf()
         }
 
         val isMountedEngineLine = addMountedEnginesIfNeeded(line)
         if (isMountedEngineLine) {
-            return null
+            return mutableListOf()
         }
 
         val engineHeaderGroup = ENGINE_ROUTES_HEADER_LINE.matcher(line.trim())
         if (engineHeaderGroup.matches()) {
             val engineNameSpaceWithSuffix = getGroup(engineHeaderGroup, 1)
             currentMountedRailsEngine = findMountedEngine(engineNameSpaceWithSuffix)
-            return null
+            return mutableListOf()
         }
 
         val groups: Matcher = ROUTE_LINE.matcher(line.trim())
         if (!groups.matches()) {
-            return null
+            return mutableListOf()
         }
 
         val routeName = getGroup(groups, 1)
-        val requestMethod = getGroup(groups, 2)
         var routePath = getGroup(groups, 3)
         val conditions = getGroup(groups, 4)
         val action = conditions.split("#", limit = 2)
@@ -93,18 +92,26 @@ class RailsRoutesParser(private val module: Module) {
             }
         }
 
-        if (routeController.isBlank() && routeAction.isBlank()) {
-            val mountedEngineController = captureFirstCroup(MOUNTED_ENGINE_CONTROLLER, conditions)
-            if (mountedEngineController.isNotBlank()) {
-                return MountedEngineRoute(module, requestMethod, routePath, routeName, mountedEngineController)
+        // For the following routes, multiple HTTP methods are set on a single line.
+        // match '/multiple_match', to: 'multiple#call', via: [:get, :post]
+        // Note: `|` cannot be split if escaped (`\\|`)
+        val requestMethods = getGroup(groups, 2).split("|")
+        val results = requestMethods.map {
+            if (routeController.isBlank() && routeAction.isBlank()) {
+                val mountedEngineController = captureFirstCroup(MOUNTED_ENGINE_CONTROLLER, conditions)
+                if (mountedEngineController.isNotBlank()) {
+                    MountedEngineRoute(module, it, routePath, routeName, mountedEngineController)
+                }
+            }
+
+            if (redirectPath.isNotBlank()) {
+                RedirectRoute(module, it, routePath, routeName, redirectPath)
+            } else {
+                SimpleRoute(module, it, routePath, routeName, routeController, routeAction)
             }
         }
 
-        if (redirectPath.isNotBlank()) {
-            return RedirectRoute(module, requestMethod, routePath, routeName, redirectPath)
-        }
-
-        return SimpleRoute(module, requestMethod, routePath, routeName, routeController, routeAction)
+        return results.toMutableList()
     }
 
     private fun hasIgnorableValues(line: String): Boolean {
