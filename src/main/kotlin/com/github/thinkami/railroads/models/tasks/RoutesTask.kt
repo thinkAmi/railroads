@@ -20,7 +20,7 @@ import org.jetbrains.plugins.ruby.rails.model.RailsApp
 
 class RoutesTask(private val project: Project) : Task.Backgroundable(project, "task start...") {
     private val module: Module = project.modules.first()
-    private lateinit var output: ProcessOutput
+    private var output: ProcessOutput = ProcessOutput()
 
     override fun run(indicator: ProgressIndicator) {
         val toolWindow = ToolWindowManager.getInstance(project).getToolWindow("Railroads") ?: return
