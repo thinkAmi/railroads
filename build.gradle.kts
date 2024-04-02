@@ -1,8 +1,16 @@
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
+import java.io.FileInputStream
+import java.util.*
 
 fun properties(key: String) = providers.gradleProperty(key)
 fun environment(key: String) = providers.environmentVariable(key)
+
+// load local.properties
+val localPropertiesFileExists = File(rootProject.rootDir, "local.properties").exists()
+val prop = if (localPropertiesFileExists) Properties().apply {
+    load(FileInputStream(File(rootProject.rootDir, "local.properties")))
+} else null
 
 plugins {
     id("java") // Java support
@@ -115,5 +123,20 @@ tasks {
         // Specify pre-release label to publish the plugin in a custom Release Channel automatically. Read more:
         // https://plugins.jetbrains.com/docs/intellij/deployment.html#specifying-a-release-channel
         channels = properties("pluginVersion").map { listOf(it.substringAfter('-', "").substringBefore('.').ifEmpty { "default" }) }
+    }
+
+    runIde {
+        // executable other IDE
+        val d = prop?.getProperty("ideDir")
+        if (d != null) {
+            if (d.isNotEmpty()) {
+                ideDir.set(prop?.let { file(it.getProperty("ideDir")) })
+            }
+        }
+
+        // specific JBR version
+        if (properties("jbrVersion").get().isNotEmpty()) {
+            jbrVersion.set(properties("jbrVersion"))
+        }
     }
 }

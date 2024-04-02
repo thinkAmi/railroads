@@ -1,18 +1,37 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
     <id>com.github.thinkami.railroads</id>
-    <name>railroads</name>
-    <vendor>thinkami</vendor>
+    <name>Railroads</name>
+    <vendor>thinkAmi</vendor>
+    <category>Navigation</category>
 
+    <depends>com.intellij.modules.ruby</depends>
     <depends>com.intellij.modules.platform</depends>
 
-    <resource-bundle>messages.MyBundle</resource-bundle>
-
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow factoryClass="com.github.thinkami.railroads.toolWindow.MyToolWindowFactory" id="MyToolWindow"/>
+        <toolWindow factoryClass="com.github.thinkami.railroads.toolWindow.RailroadsToolWindow"
+                    id="Railroads"
+                    anchor="right"
+                    icon="RubyIcons.Rails.Rails"
+        />
+        <notificationGroup displayType="BALLOON" id="railroadsNotification" />
     </extensions>
+    
+    <actions>
+        <action class="com.github.thinkami.railroads.actions.CopyRouteNameAction"
+                id="railroads.copyRouteName"
+                text="Copy Name" />
+        <action class="com.github.thinkami.railroads.actions.CopyRoutePathAction"
+                id="railroads.copyRoutPath"
+                text="Copy Path" />
+        <action class="com.github.thinkami.railroads.actions.CopyRouteFullPathAction"
+                id="railroads.copyRouteFullPath"
+                text="Copy Full Path" />
 
-    <applicationListeners>
-        <listener class="com.github.thinkami.railroads.listeners.MyApplicationActivationListener" topic="com.intellij.openapi.application.ApplicationActivationListener"/>
-    </applicationListeners>
+        <group id="railroads.PopupMenu">
+            <reference ref="railroads.copyRouteName" />
+            <reference ref="railroads.copyRouteFullPath" />
+            <reference ref="railroads.copyRoutPath" />
+        </group>
+    </actions>
 </idea-plugin>
