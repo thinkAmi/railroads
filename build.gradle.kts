@@ -7,9 +7,10 @@ fun properties(key: String) = providers.gradleProperty(key)
 fun environment(key: String) = providers.environmentVariable(key)
 
 // load local.properties
-val prop = Properties().apply {
+val localPropertiesFileExists = File(rootProject.rootDir, "local.properties").exists()
+val prop = if (localPropertiesFileExists) Properties().apply {
     load(FileInputStream(File(rootProject.rootDir, "local.properties")))
-}
+} else null
 
 plugins {
     id("java") // Java support
@@ -126,9 +127,11 @@ tasks {
 
     runIde {
         // executable other IDE
-        val d = prop.getProperty("ideDir")
-        if (d.isNotEmpty()) {
-            ideDir.set(file(prop.getProperty("ideDir")))
+        val d = prop?.getProperty("ideDir")
+        if (d != null) {
+            if (d.isNotEmpty()) {
+                ideDir.set(prop?.let { file(it.getProperty("ideDir")) })
+            }
         }
 
         // specific JBR version
