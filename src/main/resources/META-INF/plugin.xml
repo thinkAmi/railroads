@@ -2,7 +2,8 @@
 <idea-plugin>
     <id>com.github.thinkami.railroads</id>
     <name>Railroads</name>
-    <vendor>thinkami</vendor>
+    <vendor>thinkAmi</vendor>
+    <category>Navigation</category>
 
     <depends>com.intellij.modules.ruby</depends>
     <depends>com.intellij.modules.platform</depends>
