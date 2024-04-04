@@ -1,8 +1,8 @@
 # railroads
 
 ![Build](https://github.com/thinkAmi/railroads/workflows/Build/badge.svg)
-[![Version](https://img.shields.io/jetbrains/plugin/v/PLUGIN_ID.svg)](https://plugins.jetbrains.com/plugin/PLUGIN_ID)
-[![Downloads](https://img.shields.io/jetbrains/plugin/d/PLUGIN_ID.svg)](https://plugins.jetbrains.com/plugin/PLUGIN_ID)
+[![Version](https://img.shields.io/jetbrains/plugin/v/24076-railroads.svg)](https://plugins.jetbrains.com/plugin/24076-railroads)
+[![Downloads](https://img.shields.io/jetbrains/plugin/d/24076-railroads.svg)](https://plugins.jetbrains.com/plugin/24076-railroads)
 
 <!-- Plugin description -->
 
@@ -29,6 +29,10 @@ There was a great plugin called [Railways](https://plugins.jetbrains.com/plugin/
 
   Download the [latest release](https://github.com/thinkAmi/railroads/releases/latest) and install it manually using
   <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>⚙️</kbd> > <kbd>Install plugin from disk...</kbd>
+
+## Screenshot
+
+![2024_0403_railroads](https://github.com/thinkAmi/railroads/assets/1299734/2bfb5126-60dd-45f6-816e-3627bc96b904)
 
 ## License
 
