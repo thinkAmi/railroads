@@ -46,7 +46,9 @@ class RailsAction {
             // Even if psiMethod is valid, its name can be different - it
             // usually happens when user edits method name - the psiElement
             // is just updated.
-            if (psiMethod != null && actionName != psiMethod!!.name) {
+            // (change from railways)
+            // psiMethod!!.name is deprecated. Instead, use methodName.name.
+            if (psiMethod != null && actionName != psiMethod!!.methodName!!.name) {
                 psiMethod = null
             }
         }
