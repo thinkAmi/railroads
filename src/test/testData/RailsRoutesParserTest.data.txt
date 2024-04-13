@@ -1,0 +1,10 @@
+                                  Prefix Verb     URI Pattern                                                                                       Controller#Action
+                          multiple_match GET|POST /multiple_match(.:format)                                                                         multiple#call
+                      blog_post_comments GET      /blogs/:blog_id/posts/:post_id/comments(.:format)                                                 blogs/posts/comments#index
+                                         POST     /blogs/:blog_id/posts/:post_id/comments(.:format)                                                 blogs/posts/comments#create
+                   new_blog_post_comment GET      /blogs/:blog_id/posts/:post_id/comments/new(.:format)                                             blogs/posts/comments#new
+                  edit_blog_post_comment GET      /blogs/:blog_id/posts/:post_id/comments/:id/edit(.:format)                                        blogs/posts/comments#edit
+                       blog_post_comment GET      /blogs/:blog_id/posts/:post_id/comments/:id(.:format)                                             blogs/posts/comments#show
+                                         PATCH    /blogs/:blog_id/posts/:post_id/comments/:id(.:format)                                             blogs/posts/comments#update
+                                         PUT      /blogs/:blog_id/posts/:post_id/comments/:id(.:format)                                             blogs/posts/comments#update
+                                         DELETE   /blogs/:blog_id/posts/:post_id/comments/:id(.:format)                                             blogs/posts/comments#destroy
