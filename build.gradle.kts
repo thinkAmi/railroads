@@ -39,7 +39,7 @@ dependencies {
     val mockkVersion = "1.13.10"
     testImplementation("io.mockk:mockk:${mockkVersion}")
 
-    val junitVersion = "5.10.2"
+    val junitVersion = "5.10.3"
     testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
     testImplementation("org.junit.jupiter:junit-jupiter-params:${junitVersion}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
