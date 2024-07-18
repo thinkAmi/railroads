@@ -36,7 +36,7 @@ dependencies {
     testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
     testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
 
-    val mockkVersion = "1.13.10"
+    val mockkVersion = "1.13.12"
     testImplementation("io.mockk:mockk:${mockkVersion}")
 
     val junitVersion = "5.10.3"
