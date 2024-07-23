@@ -12,7 +12,7 @@
         <toolWindow factoryClass="com.github.thinkami.railroads.toolWindow.RailroadsToolWindow"
                     id="Railroads"
                     anchor="right"
-                    icon="RubyIcons.Rails.Rails"
+                    icon="com.github.thinkami.railroads.icons.RailroadsIcons.RailroadsToolWindow"
         />
         <notificationGroup displayType="BALLOON" id="railroadsNotification" />
     </extensions>
