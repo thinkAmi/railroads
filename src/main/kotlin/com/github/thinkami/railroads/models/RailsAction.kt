@@ -2,6 +2,7 @@ package com.github.thinkami.railroads.models
 
 import com.github.thinkami.railroads.helper.PsiUtil
 import com.github.thinkami.railroads.ui.RailroadIcon
+import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.module.Module
 import org.jetbrains.plugins.ruby.rails.model.RailsApp
 import org.jetbrains.plugins.ruby.ruby.lang.psi.controlStructures.classes.RClass
@@ -54,20 +55,12 @@ class RailsAction {
         }
     }
 
-    fun getIcon(): Icon {
-        val visibility = getMethodVisibility()
-        return when (visibility) {
+    fun getIcon(): Icon = ReadAction.compute<Icon, Throwable> {
+        val visibility = psiMethod?.visibility
+        when (visibility) {
             Visibility.PRIVATE, Visibility.PROTECTED -> RailroadIcon.NodeMethod
             Visibility.PUBLIC -> RailroadIcon.NodeRouteAction
             else -> RailroadIcon.Unknown
         }
-    }
-
-    private fun getMethodVisibility(): Visibility? {
-        if (psiMethod == null) {
-            return null
-        }
-
-        return psiMethod!!.visibility
     }
 }

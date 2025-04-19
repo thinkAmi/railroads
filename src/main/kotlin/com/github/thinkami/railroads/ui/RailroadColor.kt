@@ -7,15 +7,22 @@ import com.intellij.ui.SimpleTextAttributes
 class RailroadColor {
     companion object {
         private val DisabledColor = JBColor.GRAY
-        private val RubyMethodColor = TextAttributesKey.find("RUBY_METHOD_NAME").defaultAttributes.foregroundColor
+
+        // Delayed initialization delays acquisition of TextAttributesKey until runtime
+        private val rubyMethodColor by lazy {
+            TextAttributesKey.find("RUBY_METHOD_NAME").defaultAttributes.foregroundColor
+        }
 
         val DisabledItemAttr = SimpleTextAttributes(
             SimpleTextAttributes.STYLE_PLAIN,
             DisabledColor
         )
-        val RubyMethodAttr = SimpleTextAttributes(
-            SimpleTextAttributes.STYLE_PLAIN,
-            RubyMethodColor
-        )
+        // SimpleTextAttributes is also initialized lazily.
+        val RubyMethodAttr by lazy {
+            SimpleTextAttributes(
+                SimpleTextAttributes.STYLE_PLAIN,
+                rubyMethodColor
+            )
+        }
     }
 }

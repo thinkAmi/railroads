@@ -20,13 +20,20 @@ There was a great plugin called [Railways](https://plugins.jetbrains.com/plugin/
 
 ## Unsupported Features
 
-- IDE versions earlier than `2023.2.x` .
+- IDE versions earlier than `2023.2.*` .
   - if you want to use that version, please use the Railways plugin.
-  - for ease of feature comparison with Railways, 2023.2.x is supported at this time. However, if Railroads finds it difficult to support 2023.2.x in the future, it may no longer do so.
+  - for ease of feature comparison with Railways, 2023.2.* is supported at this time. However, if Railroads finds it difficult to support 2023.2.* in the future, it may no longer do so.
 - Old format output from rails routes
   - for example, the format of the following test data from Railways
     - https://github.com/basgren/railways/blob/master/test/data/parserTest_1.txt
   - because there is no environment that can output the old format
+
+## Compatibility
+
+- Railroads version 0.2.* and earlier
+  - Supports IDE versions from 2023.3.* up to 2024.*
+- Railroads version 0.3.* and later
+  - Supports IDE versions 2024.2.* and later
 
 ## TODOs
 
@@ -62,7 +69,9 @@ There was a great plugin called [Railways](https://plugins.jetbrains.com/plugin/
 - Set `URL` is this repository, and Click `Clone` .
 - Open `Project Structure` and Select `Platform Settings > SDKs` .
 - Set JDK path.
-  - example: Windows + RubyMine's JBR: `C:\Users\<UserName>\AppData\Local\JetBrains\Toolbox\apps\RubyMine\ch-0\233.14808.14\jbr`
+  - example
+    - Windows + RubyMine's JBR: `C:\Users\<UserName>\AppData\Local\JetBrains\Toolbox\apps\RubyMine\ch-0\233.14808.14\jbr`
+    - macOS + RubyMine's JBR: `/Library/Java/JavaVirtualMachines/jbrsdk-21.0.6-osx-aarch64-b895.109/Contents/Home`
 - Select `Project Settings > Project` .
 - Set the following values, and click `OK` .
   - Name: `railroads`
