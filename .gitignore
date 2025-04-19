@@ -7,3 +7,6 @@ local.properties
 *.crt
 *.pem
 marketplace-zip-signer-cli.jar
+
+.kotlin
+.intellijPlatform
