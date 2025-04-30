@@ -10,3 +10,4 @@ marketplace-zip-signer-cli.jar
 
 .kotlin
 .intellijPlatform
+.DS_Store
