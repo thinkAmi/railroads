@@ -7,7 +7,7 @@ import com.intellij.ui.PopupHandler
 import com.intellij.ui.table.JBTable
 import com.intellij.util.ArrayUtil
 import java.awt.Component
-import java.awt.event.MouseAdapter
+import com.intellij.ui.DoubleClickListener
 import java.awt.event.MouseEvent
 import javax.swing.SwingUtilities
 
@@ -30,16 +30,16 @@ class RoutesTable: JBTable(), DataProvider {
     init {
         addMouseListener(RailroadsPopupHandler())
 
-        addMouseListener(object : MouseAdapter() {
-            override fun mouseClicked(e: MouseEvent) {
-                if (e.clickCount == 2) {
-                    val route = getSelectedRoute()
-                    if (route != null && route.canNavigate()) {
-                        route.navigate(true)
-                    }
+        object : DoubleClickListener() {
+            override fun onDoubleClick(e: MouseEvent): Boolean {
+                val route = getSelectedRoute()
+                if (route != null && route.canNavigate()) {
+                    route.navigate(true)
+                    return true
                 }
+                return false
             }
-        })
+        }.installOn(this)
     }
 
     override fun getData(dataId: String): Any? {
