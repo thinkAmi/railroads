@@ -21,36 +21,38 @@ class RailsAction {
     }
 
     fun update(app: RailsApp?, controllerShortName: String, actionName: String) {
-        if ((app == null) || controllerShortName.isBlank()) {
-            psiClass = null
-            psiMethod = null
-            return
-        }
-
-        val qualifiedName = PsiUtil.getControllerClassNameByShortName(controllerShortName)
-
-        if (psiClass != null && (!psiClass!!.isValid || psiClass!!.fqn.fullPath != qualifiedName)) {
-            psiClass = null
-            psiMethod = null
-        }
-
-        if (psiClass == null) {
-            psiClass = PsiUtil.findControllerClass(app, qualifiedName)
-        }
-
-        if (psiClass != null) {
-            if (psiMethod == null || !psiMethod!!.isValid) {
-                psiMethod = PsiUtil.findControllerMethod(app, psiClass!!, actionName)
-            }
-        } else {
-            // (railways)
-            // Even if psiMethod is valid, its name can be different - it
-            // usually happens when user edits method name - the psiElement
-            // is just updated.
-            // (change from railways)
-            // psiMethod!!.name is deprecated. Instead, use methodName.name.
-            if (psiMethod != null && actionName != psiMethod!!.methodName!!.name) {
+        ReadAction.run<RuntimeException> {
+            if ((app == null) || controllerShortName.isBlank()) {
+                psiClass = null
                 psiMethod = null
+                return@run
+            }
+
+            val qualifiedName = PsiUtil.getControllerClassNameByShortName(controllerShortName)
+
+            if (psiClass != null && (!psiClass!!.isValid || psiClass!!.fqn.fullPath != qualifiedName)) {
+                psiClass = null
+                psiMethod = null
+            }
+
+            if (psiClass == null) {
+                psiClass = PsiUtil.findControllerClass(app, qualifiedName)
+            }
+
+            if (psiClass != null) {
+                if (psiMethod == null || !psiMethod!!.isValid) {
+                    psiMethod = PsiUtil.findControllerMethod(app, psiClass!!, actionName)
+                }
+            } else {
+                // (railways)
+                // Even if psiMethod is valid, its name can be different - it
+                // usually happens when user edits method name - the psiElement
+                // is just updated.
+                // (change from railways)
+                // psiMethod!!.name is deprecated. Instead, use methodName.name.
+                if (psiMethod != null && actionName != psiMethod!!.methodName!!.name) {
+                    psiMethod = null
+                }
             }
         }
     }
