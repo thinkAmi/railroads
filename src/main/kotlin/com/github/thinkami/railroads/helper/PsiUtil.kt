@@ -1,6 +1,7 @@
 package com.github.thinkami.railroads.helper
 
 import com.intellij.openapi.project.Project
+import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.stubs.StubIndex
 import com.intellij.psi.util.PsiElementFilter
 import com.intellij.psi.util.PsiTreeUtil
@@ -48,13 +49,7 @@ class PsiUtil {
             val items = findClassesAndModules(className, project)
 
             for (item in items) {
-                var name: String? = null
-
-                if (item is RClass) {
-                    name = item.qualifiedName
-                } else if (item is RModule) {
-                    name = item.qualifiedName
-                }
+                val name = item.fqnWithNesting.fullPath
 
                 if (qualifiedName.equals(name, ignoreCase = true)) {
                     return item as RContainer
@@ -96,7 +91,7 @@ class PsiUtil {
         }
 
         private fun findClassesAndModules(name: String, project: Project): Collection<RElementWithFQN> {
-            val scope = RubyProjectAndLibrariesScope(project)
+            val scope = GlobalSearchScope.allScope(project)
 
             return StubIndex.getElements(RubyClassModuleNameIndex.KEY, name, project, scope, RElementWithFQN::class.java)
         }
