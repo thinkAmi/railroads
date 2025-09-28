@@ -71,7 +71,13 @@ dependencies {
 
     // IntelliJ Platform Gradle Plugin Dependencies Extension - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html
     intellijPlatform {
-        if (prop != null) {
+        // When running test tasks, if the IDE version specified in local.properties differs from the platformVersion specified in gradle.properties,
+        // this prevents the JVM from crashing.
+        val isTestTask = gradle.startParameter.taskNames.any {
+            it.contains("test", ignoreCase = true)
+        }
+
+        if (prop != null && !isTestTask) {
             prop.getProperty("ideDir")?.let { ideDirValue ->
                     if (ideDirValue.isNotEmpty()) {
                         local(file(ideDirValue))
