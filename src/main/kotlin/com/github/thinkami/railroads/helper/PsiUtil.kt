@@ -7,7 +7,6 @@ import com.intellij.psi.util.PsiElementFilter
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.plugins.ruby.rails.model.RailsApp
 import org.jetbrains.plugins.ruby.ruby.codeInsight.resolve.scope.RElementWithFQN
-import org.jetbrains.plugins.ruby.ruby.lang.psi.RubyProjectAndLibrariesScope
 import org.jetbrains.plugins.ruby.ruby.lang.psi.RubyPsiUtil
 import org.jetbrains.plugins.ruby.ruby.lang.psi.controlStructures.classes.RClass
 import org.jetbrains.plugins.ruby.ruby.lang.psi.controlStructures.methods.RMethod
