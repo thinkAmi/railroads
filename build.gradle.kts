@@ -106,7 +106,9 @@ dependencies {
     testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
 
     val mockkVersion = "1.13.12"
-    testImplementation("io.mockk:mockk:${mockkVersion}")
+    testImplementation("io.mockk:mockk:${mockkVersion}") {
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
+    }
 
     val junitVersion = "5.10.3"
     testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
