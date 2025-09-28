@@ -48,6 +48,8 @@ class PsiUtil {
             val items = findClassesAndModules(className, project)
 
             for (item in items) {
+                // `fqn.fullPath` causes Rails routing to fail, so use `fqnWithNesting.fullPath` instead.
+                // Rails routing example: /rails/conductor/action_mailbox/inbound_emails
                 val name = item.fqnWithNesting.fullPath
 
                 if (qualifiedName.equals(name, ignoreCase = true)) {
@@ -90,6 +92,7 @@ class PsiUtil {
         }
 
         private fun findClassesAndModules(name: String, project: Project): Collection<RElementWithFQN> {
+            // Since IDE 2025.2, the `RubyProjectAndLibrariesScope` have been no longer available, so we should use the equivalent `GlobalSearchScope.allScope` instead.
             val scope = GlobalSearchScope.allScope(project)
 
             return StubIndex.getElements(RubyClassModuleNameIndex.KEY, name, project, scope, RElementWithFQN::class.java)
