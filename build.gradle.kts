@@ -1,6 +1,8 @@
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
+import org.jetbrains.intellij.platform.gradle.extensions.IntelliJPlatformDependenciesExtension
+import org.jetbrains.intellij.pluginRepository.PluginRepositoryFactory
 import java.io.FileInputStream
 import java.util.*
 
@@ -9,6 +11,31 @@ val localPropertiesFileExists = File(rootProject.rootDir, "local.properties").ex
 val prop = if (localPropertiesFileExists) Properties().apply {
     load(FileInputStream(File(rootProject.rootDir, "local.properties")))
 } else null
+
+// ref: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-recipes.html#resolve-plugin-from-jetbrains-marketplace-in-the-latest-compatible-version
+val IntelliJPlatformDependenciesExtension.pluginRepository by lazy {
+    PluginRepositoryFactory.create("https://plugins.jetbrains.com")
+}
+
+fun IntelliJPlatformDependenciesExtension.rubyMineBundledPlugin(vararg pluginIds: String) =
+    bundledPlugins(provider {
+        pluginIds.filter {
+            intellijPlatform.productInfo.productCode == "RM"
+        }
+    })
+
+fun IntelliJPlatformDependenciesExtension.pluginsInLatestCompatibleVersion(vararg pluginIds: String) =
+    plugins(provider {
+        pluginIds.mapNotNull { pluginId ->
+            val product = intellijPlatform.productInfo
+            val build = "${product.productCode}-${product.buildNumber}"
+
+            pluginRepository.pluginManager
+                .searchCompatibleUpdates(build = build, xmlIds = listOf(pluginId))
+                .firstOrNull()
+                ?.let { "${it.pluginXmlId}:${it.version}" }
+        }
+    })
 
 plugins {
     id("java") // Java support
@@ -54,19 +81,15 @@ dependencies {
             create(providers.gradleProperty("platformType"), providers.gradleProperty("platformVersion"))
         }
 
-        // Plugin Dependencies. Uses `platformBundledPlugins` property from the gradle.properties file for bundled IntelliJ Platform plugins.
-        // [for railroads] railroads plugin does not use platformBundledPlugins
-        // bundledPlugins(providers.gradleProperty("platformBundledPlugins").map { it.split(',') })
+        // Bundled-plugin
+        // IntelliJ IDEA Ultimate: Nothing
+        // RubyMine: Ruby plugin
+        rubyMineBundledPlugin("org.jetbrains.plugins.ruby")
 
-        // Plugin Dependencies. Uses `platformBundledPlugins` property from the gradle.properties file for bundled IntelliJ Platform plugins.
-        val platformBundledPluginsProperty = providers.gradleProperty("platformBundledPlugins")
-        if (platformBundledPluginsProperty.isPresent) {
-            bundledPlugins(platformBundledPluginsProperty.map { it.split(',') })
-        }
-
-
-        // Plugin Dependencies. Uses `platformPlugins` property from the gradle.properties file for plugin from JetBrains Marketplace.
-        plugins(providers.gradleProperty("platformPlugins").map { it.split(',') })
+        // Non-Bundled-plugin
+        // IntelliJ IDEA Ultimate: Resolve ruby plugin from JetBrains Marketplace in the latest compatible version
+        // RubyMine: Nothing
+        pluginsInLatestCompatibleVersion("org.jetbrains.plugins.ruby")
 
         testFramework(TestFrameworkType.Platform)
     }
