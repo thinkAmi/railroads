@@ -1,8 +1,8 @@
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
+import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.intellij.platform.gradle.extensions.IntelliJPlatformDependenciesExtension
-import org.jetbrains.intellij.pluginRepository.PluginRepositoryFactory
 import java.io.FileInputStream
 import java.util.*
 
@@ -12,30 +12,22 @@ val prop = if (localPropertiesFileExists) Properties().apply {
     load(FileInputStream(File(rootProject.rootDir, "local.properties")))
 } else null
 
-// ref: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-recipes.html#resolve-plugin-from-jetbrains-marketplace-in-the-latest-compatible-version
-val IntelliJPlatformDependenciesExtension.pluginRepository by lazy {
-    PluginRepositoryFactory.create("https://plugins.jetbrains.com")
-}
-
-fun IntelliJPlatformDependenciesExtension.rubyMineBundledPlugin(vararg pluginIds: String) =
+fun IntelliJPlatformDependenciesExtension.addPlugin(vararg pluginIds: String) {
+    // For RubyMine, since the Ruby plugin is bundled with the IDE, use bundledPlugins().
     bundledPlugins(provider {
         pluginIds.filter {
-            intellijPlatform.productInfo.productCode == "RM"
+            intellijPlatform.productInfo.productCode == IntelliJPlatformType.RubyMine.code
         }
     })
 
-fun IntelliJPlatformDependenciesExtension.pluginsInLatestCompatibleVersion(vararg pluginIds: String) =
-    plugins(provider {
-        pluginIds.mapNotNull { pluginId ->
-            val product = intellijPlatform.productInfo
-            val build = "${product.productCode}-${product.buildNumber}"
-
-            pluginRepository.pluginManager
-                .searchCompatibleUpdates(build = build, xmlIds = listOf(pluginId))
-                .firstOrNull()
-                ?.let { "${it.pluginXmlId}:${it.version}" }
+    // For IntelliJ IDEA, since the Ruby plugin is not bundled with the IDE,
+    // use compatiblePlugin() to add a Ruby plugin with compatibility considerations.
+    compatiblePlugins(provider {
+        pluginIds.filter {
+            intellijPlatform.productInfo.productCode == IntelliJPlatformType.IntellijIdeaUltimate.code
         }
     })
+}
 
 plugins {
     id("java") // Java support
@@ -84,18 +76,23 @@ dependencies {
                     }
                 }
         } else {
-            create(providers.gradleProperty("platformType"), providers.gradleProperty("platformVersion"))
+            // Originally, Target Platform was set to IDEA Ultimate.
+            // However, starting from IDE 2025.2, verifyPlugin would fail
+            // unless org.jetbrains.plugins.ruby was specified in the plugin.xml's depends section.
+            // While org.jetbrains.plugins.ruby is the name of the Ruby plugin,
+            // the official documentation doesn't explicitly state that it should be included in the depends list.
+            // https://plugins.jetbrains.com/docs/intellij/rubymine.html
+            //
+            // Some open-source plugins using the Ruby plugin include this specification,
+            // but there was no clear evidence indicating whether this was truly appropriate.
+            // Therefore, we reverted to using com.intellij.modules.ruby for depends while changing the Target Platform to RubyMine instead.
+            //
+            // After verifying functionality using IDEA Ultimate with the Ruby plugin,
+            // no issues were found, so we will proceed with this configuration for the time being.
+            rubymine(providers.gradleProperty("platformVersion"))
         }
 
-        // Bundled-plugin
-        // IntelliJ IDEA Ultimate: Nothing
-        // RubyMine: Ruby plugin
-        rubyMineBundledPlugin("org.jetbrains.plugins.ruby")
-
-        // Non-Bundled-plugin
-        // IntelliJ IDEA Ultimate: Resolve ruby plugin from JetBrains Marketplace in the latest compatible version
-        // RubyMine: Nothing
-        pluginsInLatestCompatibleVersion("org.jetbrains.plugins.ruby")
+        addPlugin("org.jetbrains.plugins.ruby")
 
         testFramework(TestFrameworkType.Platform)
     }
