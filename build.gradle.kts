@@ -142,7 +142,13 @@ intellijPlatform {
 
         ideaVersion {
             sinceBuild = providers.gradleProperty("pluginSinceBuild")
-            untilBuild = providers.gradleProperty("pluginUntilBuild")
+
+            // Note: For Railroads, since no conditions are specified, pluginUntilBuild remains undefined.
+            // If pluginUntilBuild is undefined, explicitly returning null allows the recommended() method to resolve the IDE
+            // If no value exists, the recommended() method cannot resolve the IDE
+            untilBuild = providers.gradleProperty("pluginUntilBuild").takeIf {
+                !it.orNull.isNullOrBlank()
+            } ?: provider { null }
         }
     }
 
