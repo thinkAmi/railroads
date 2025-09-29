@@ -1,14 +1,10 @@
 package com.github.thinkami.railroads.models.routes
 
 import com.github.thinkami.railroads.ui.RailroadIcon
-import com.intellij.openapi.module.Module
-import io.kotest.core.spec.style.DescribeSpec
-import io.kotest.matchers.shouldBe
-import io.mockk.mockk
+import com.intellij.testFramework.fixtures.BasePlatformTestCase
 
-class MountedEngineRouteTest: DescribeSpec ({
-    describe("getActionIcon") {
-        val module = mockk<Module>()
+class MountedEngineRouteTest: BasePlatformTestCase() {
+    fun testGetActionIcon() {
         val actual = MountedEngineRoute(
             module,
             "GET",
@@ -16,9 +12,6 @@ class MountedEngineRouteTest: DescribeSpec ({
             "",
             "Test::Engine"
         )
-
-        it("icon is NodeMountedEngine ") {
-            actual.getActionIcon().shouldBe(RailroadIcon.NodeMountedEngine)
-        }
+        assertEquals(RailroadIcon.NodeMountedEngine, actual.getActionIcon())
     }
-})
+}

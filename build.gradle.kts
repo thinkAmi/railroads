@@ -101,15 +101,6 @@ dependencies {
     }
 
     // railroads plugin dependencies
-    val kotestVersion = "5.9.1"
-    testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
-    testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
-
-    val mockkVersion = "1.13.12"
-    testImplementation("io.mockk:mockk:${mockkVersion}") {
-        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
-    }
-
     val junitVersion = "5.10.3"
     testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
     testImplementation("org.junit.jupiter:junit-jupiter-params:${junitVersion}")
