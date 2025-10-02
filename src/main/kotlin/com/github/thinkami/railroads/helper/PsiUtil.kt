@@ -1,12 +1,12 @@
 package com.github.thinkami.railroads.helper
 
 import com.intellij.openapi.project.Project
+import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.stubs.StubIndex
 import com.intellij.psi.util.PsiElementFilter
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.plugins.ruby.rails.model.RailsApp
 import org.jetbrains.plugins.ruby.ruby.codeInsight.resolve.scope.RElementWithFQN
-import org.jetbrains.plugins.ruby.ruby.lang.psi.RubyProjectAndLibrariesScope
 import org.jetbrains.plugins.ruby.ruby.lang.psi.RubyPsiUtil
 import org.jetbrains.plugins.ruby.ruby.lang.psi.controlStructures.classes.RClass
 import org.jetbrains.plugins.ruby.ruby.lang.psi.controlStructures.methods.RMethod
@@ -48,13 +48,9 @@ class PsiUtil {
             val items = findClassesAndModules(className, project)
 
             for (item in items) {
-                var name: String? = null
-
-                if (item is RClass) {
-                    name = item.qualifiedName
-                } else if (item is RModule) {
-                    name = item.qualifiedName
-                }
+                // `fqn.fullPath` causes Rails routing to fail, so use `fqnWithNesting.fullPath` instead.
+                // Rails routing example: /rails/conductor/action_mailbox/inbound_emails
+                val name = item.fqnWithNesting.fullPath
 
                 if (qualifiedName.equals(name, ignoreCase = true)) {
                     return item as RContainer
@@ -96,7 +92,8 @@ class PsiUtil {
         }
 
         private fun findClassesAndModules(name: String, project: Project): Collection<RElementWithFQN> {
-            val scope = RubyProjectAndLibrariesScope(project)
+            // Since IDE 2025.2, the `RubyProjectAndLibrariesScope` have been no longer available, so we should use the equivalent `GlobalSearchScope.allScope` instead.
+            val scope = GlobalSearchScope.allScope(project)
 
             return StubIndex.getElements(RubyClassModuleNameIndex.KEY, name, project, scope, RElementWithFQN::class.java)
         }

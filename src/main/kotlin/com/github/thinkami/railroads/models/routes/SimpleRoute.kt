@@ -54,7 +54,7 @@ class SimpleRoute(
         }
 
         val controllerClass = railsAction.psiClass
-        val controllerClassName = if (controllerClass != null) controllerClass.qualifiedName else PsiUtil.getControllerClassNameByShortName(controllerName)
+        val controllerClassName = if (controllerClass != null) controllerClass.fqnWithNesting.fullPath else PsiUtil.getControllerClassNameByShortName(controllerName)
 
         return "$controllerClassName#$actionName"
     }

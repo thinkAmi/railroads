@@ -5,8 +5,8 @@
     <vendor>thinkAmi</vendor>
     <category>Navigation</category>
 
+	<depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.modules.ruby</depends>
-    <depends>com.intellij.modules.platform</depends>
 
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow factoryClass="com.github.thinkami.railroads.toolWindow.RailroadsToolWindow"

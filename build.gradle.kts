@@ -1,6 +1,8 @@
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
+import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
+import org.jetbrains.intellij.platform.gradle.extensions.IntelliJPlatformDependenciesExtension
 import java.io.FileInputStream
 import java.util.*
 
@@ -9,6 +11,23 @@ val localPropertiesFileExists = File(rootProject.rootDir, "local.properties").ex
 val prop = if (localPropertiesFileExists) Properties().apply {
     load(FileInputStream(File(rootProject.rootDir, "local.properties")))
 } else null
+
+fun IntelliJPlatformDependenciesExtension.addPlugin(vararg pluginIds: String) {
+    // For RubyMine, since the Ruby plugin is bundled with the IDE, use bundledPlugins().
+    bundledPlugins(provider {
+        pluginIds.filter {
+            intellijPlatform.productInfo.productCode == IntelliJPlatformType.RubyMine.code
+        }
+    })
+
+    // For IntelliJ IDEA, since the Ruby plugin is not bundled with the IDE,
+    // use compatiblePlugin() to add a Ruby plugin with compatibility considerations.
+    compatiblePlugins(provider {
+        pluginIds.filter {
+            intellijPlatform.productInfo.productCode == IntelliJPlatformType.IntellijIdeaUltimate.code
+        }
+    })
+}
 
 plugins {
     id("java") // Java support
@@ -44,41 +63,41 @@ dependencies {
 
     // IntelliJ Platform Gradle Plugin Dependencies Extension - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html
     intellijPlatform {
-        if (prop != null) {
+        // When running test tasks, if the IDE version specified in local.properties differs from the platformVersion specified in gradle.properties,
+        // this prevents the JVM from crashing.
+        val isTestTask = gradle.startParameter.taskNames.any {
+            it.contains("test", ignoreCase = true)
+        }
+
+        if (prop != null && !isTestTask) {
             prop.getProperty("ideDir")?.let { ideDirValue ->
                     if (ideDirValue.isNotEmpty()) {
                         local(file(ideDirValue))
                     }
                 }
         } else {
-            create(providers.gradleProperty("platformType"), providers.gradleProperty("platformVersion"))
+            // Originally, Target Platform was set to IDEA Ultimate.
+            // However, starting from IDE 2025.2, verifyPlugin would fail
+            // unless org.jetbrains.plugins.ruby was specified in the plugin.xml's depends section.
+            // While org.jetbrains.plugins.ruby is the name of the Ruby plugin,
+            // the official documentation doesn't explicitly state that it should be included in the depends list.
+            // https://plugins.jetbrains.com/docs/intellij/rubymine.html
+            //
+            // Some open-source plugins using the Ruby plugin include this specification,
+            // but there was no clear evidence indicating whether this was truly appropriate.
+            // Therefore, we reverted to using com.intellij.modules.ruby for depends while changing the Target Platform to RubyMine instead.
+            //
+            // After verifying functionality using IDEA Ultimate with the Ruby plugin,
+            // no issues were found, so we will proceed with this configuration for the time being.
+            rubymine(providers.gradleProperty("platformVersion"))
         }
 
-        // Plugin Dependencies. Uses `platformBundledPlugins` property from the gradle.properties file for bundled IntelliJ Platform plugins.
-        // [for railroads] railroads plugin does not use platformBundledPlugins
-        // bundledPlugins(providers.gradleProperty("platformBundledPlugins").map { it.split(',') })
-
-        // Plugin Dependencies. Uses `platformBundledPlugins` property from the gradle.properties file for bundled IntelliJ Platform plugins.
-        val platformBundledPluginsProperty = providers.gradleProperty("platformBundledPlugins")
-        if (platformBundledPluginsProperty.isPresent) {
-            bundledPlugins(platformBundledPluginsProperty.map { it.split(',') })
-        }
-
-
-        // Plugin Dependencies. Uses `platformPlugins` property from the gradle.properties file for plugin from JetBrains Marketplace.
-        plugins(providers.gradleProperty("platformPlugins").map { it.split(',') })
+        addPlugin("org.jetbrains.plugins.ruby")
 
         testFramework(TestFrameworkType.Platform)
     }
 
     // railroads plugin dependencies
-    val kotestVersion = "5.9.1"
-    testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
-    testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
-
-    val mockkVersion = "1.13.12"
-    testImplementation("io.mockk:mockk:${mockkVersion}")
-
     val junitVersion = "5.10.3"
     testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
     testImplementation("org.junit.jupiter:junit-jupiter-params:${junitVersion}")
@@ -120,7 +139,13 @@ intellijPlatform {
 
         ideaVersion {
             sinceBuild = providers.gradleProperty("pluginSinceBuild")
-            untilBuild = providers.gradleProperty("pluginUntilBuild")
+
+            // Note: For Railroads, since no conditions are specified, pluginUntilBuild remains undefined.
+            // If pluginUntilBuild is undefined, explicitly returning null allows the recommended() method to resolve the IDE
+            // If no value exists, the recommended() method cannot resolve the IDE
+            untilBuild = providers.gradleProperty("pluginUntilBuild").takeIf {
+                !it.orNull.isNullOrBlank()
+            } ?: provider { null }
         }
     }
 
