@@ -2,8 +2,10 @@ package com.github.thinkami.railroads.models
 
 import com.github.thinkami.railroads.helper.PsiUtil
 import com.github.thinkami.railroads.ui.RailroadIcon
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.module.Module
+import com.intellij.openapi.util.Computable
 import org.jetbrains.plugins.ruby.rails.model.RailsApp
 import org.jetbrains.plugins.ruby.ruby.lang.psi.controlStructures.classes.RClass
 import org.jetbrains.plugins.ruby.ruby.lang.psi.controlStructures.methods.RMethod
@@ -16,8 +18,11 @@ class RailsAction {
 
 
     fun update(module: Module, controllerName: String, actionName: String) {
-        val app = RailsApp.fromModule(module)
-        update(app, controllerName, actionName)
+        // Since RailsApp.fromModule also interacts with the PSI/Project model, it should be included within ReadAction.
+        ReadAction.run<RuntimeException> {
+            val app = RailsApp.fromModule(module)
+            update(app, controllerName, actionName)
+        }
     }
 
     fun update(app: RailsApp?, controllerShortName: String, actionName: String) {
@@ -55,12 +60,12 @@ class RailsAction {
         }
     }
 
-    fun getIcon(): Icon = ReadAction.compute<Icon, Throwable> {
+    fun getIcon(): Icon = ApplicationManager.getApplication().runReadAction(Computable {
         val visibility = psiMethod?.visibility
         when (visibility) {
             Visibility.PRIVATE, Visibility.PROTECTED -> RailroadIcon.NodeMethod
             Visibility.PUBLIC -> RailroadIcon.NodeRouteAction
             else -> RailroadIcon.Unknown
         }
-    }
+    })
 }
