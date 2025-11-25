@@ -1,5 +1,6 @@
 package com.github.thinkami.railroads.models.tasks
 
+import com.github.thinkami.railroads.models.routes.BaseRoute
 import com.github.thinkami.railroads.parser.RailsRoutesParser
 import com.github.thinkami.railroads.views.MainView
 import com.intellij.execution.ExecutionModes
@@ -18,11 +19,13 @@ import com.intellij.openapi.wm.ToolWindowManager
 import org.jetbrains.plugins.ruby.gem.RubyGemExecutionContext
 import org.jetbrains.plugins.ruby.rails.model.RailsApp
 
-class RoutesTask(private val project: Project) : Task.Backgroundable(project, "task start...") {
+class RoutesTask(private val project: Project) : Task.Backgroundable(project, "Running rails routes") {
     private val module: Module = project.modules.first()
     private var output: ProcessOutput = ProcessOutput()
+    private var routes: List<BaseRoute> = listOf()
 
     override fun run(indicator: ProgressIndicator) {
+        indicator.isIndeterminate = false
         val toolWindow = ToolWindowManager.getInstance(project).getToolWindow("Railroads") ?: return
         val mainView = MainView(toolWindow)
         mainView.renderLoadingWithUiThread()
@@ -33,9 +36,6 @@ class RoutesTask(private val project: Project) : Task.Backgroundable(project, "t
             return
         }
 
-        indicator.fraction = 0.1
-        indicator.text = "Start"
-
         val moduleContentRoot = app.railsApplicationRoot!!.presentableUrl
         val manager = ModuleRootManager.getInstance(module)
 
@@ -44,9 +44,6 @@ class RoutesTask(private val project: Project) : Task.Backgroundable(project, "t
             return
         }
         val sdk = manager.sdk!!
-
-        indicator.fraction = 0.5
-        indicator.text = "Running rails routes..."
 
         val result = RubyGemExecutionContext.create(sdk, "rails")
             .withModule(module)
@@ -59,8 +56,10 @@ class RoutesTask(private val project: Project) : Task.Backgroundable(project, "t
             output = result
         }
 
-        indicator.fraction = 1.0
-        indicator.text = "Done rails routes"
+        // Parse routes off the EDT to avoid slow PSI/index operations on UI thread
+        if (output.stdout.isNotBlank()) {
+            routes = RailsRoutesParser(module).parse(output.stdout)
+        }
     }
 
     override fun onSuccess() {
@@ -86,7 +85,6 @@ class RoutesTask(private val project: Project) : Task.Backgroundable(project, "t
             return
         }
 
-        val routes = RailsRoutesParser(module).parse(output.stdout)
         MainView(toolWindow).renderRoutesWithUiThread(routes)
 
         ToolWindowManager.getInstance(project).notifyByBalloon(

@@ -11,3 +11,6 @@ marketplace-zip-signer-cli.jar
 .kotlin
 .intellijPlatform
 .DS_Store
+
+# directory for verifier-cli
+bin
