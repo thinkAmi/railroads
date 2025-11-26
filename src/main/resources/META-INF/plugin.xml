@@ -6,7 +6,11 @@
     <category>Navigation</category>
 
 	<depends>com.intellij.modules.platform</depends>
+
+	<!-- Filter to "IDEs with Ruby modules only" -->
     <depends>com.intellij.modules.ruby</depends>
+	<!-- Explicitly indicate that "Ruby plugins are essential" -->
+	<depends>org.jetbrains.plugins.ruby</depends>
 
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow factoryClass="com.github.thinkami.railroads.toolWindow.RailroadsToolWindow"
