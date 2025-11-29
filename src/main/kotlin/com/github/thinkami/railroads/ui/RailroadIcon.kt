@@ -1,16 +1,15 @@
 package com.github.thinkami.railroads.ui
 
 import com.intellij.icons.AllIcons
-import icons.RubyIcons
 
 class RailroadIcon {
     companion object {
         val Unknown = AllIcons.General.TodoQuestion
 
         val NodeController = AllIcons.Nodes.Class
-        val NodeMethod = AllIcons.Nodes.Method
+        val NodePrivateRouteAction = AllIcons.Nodes.Private
         val NodeMountedEngine = AllIcons.Nodes.Plugin
         val NodeRedirect = AllIcons.General.ArrowRight
-        val NodeRouteAction = RubyIcons.Rails.ProjectView.Action_method
+        val NodeRouteAction = AllIcons.Nodes.Method
     }
 }

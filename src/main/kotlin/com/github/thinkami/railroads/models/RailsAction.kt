@@ -63,7 +63,7 @@ class RailsAction {
     fun getIcon(): Icon = ApplicationManager.getApplication().runReadAction(Computable {
         val visibility = psiMethod?.visibility
         when (visibility) {
-            Visibility.PRIVATE, Visibility.PROTECTED -> RailroadIcon.NodeMethod
+            Visibility.PRIVATE, Visibility.PROTECTED -> RailroadIcon.NodePrivateRouteAction
             Visibility.PUBLIC -> RailroadIcon.NodeRouteAction
             else -> RailroadIcon.Unknown
         }
