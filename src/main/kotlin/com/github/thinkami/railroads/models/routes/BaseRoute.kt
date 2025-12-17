@@ -29,7 +29,7 @@ open class BaseRoute(
             }
 
             override fun getIcon(unused: Boolean): Icon? {
-                // TODO iconはまだない
+                // TODO No icon yet
                 return null
             }
 

@@ -3,6 +3,7 @@ package com.github.thinkami.railroads.ui.table
 import com.github.thinkami.railroads.models.RoutesTableModel
 import com.github.thinkami.railroads.models.routes.BaseRoute
 import com.intellij.openapi.actionSystem.*
+import com.intellij.openapi.startup.StartupManager
 import com.intellij.ui.PopupHandler
 import com.intellij.ui.table.JBTable
 import com.intellij.util.ArrayUtil
@@ -32,8 +33,20 @@ class RoutesTable: JBTable(), DataProvider {
 
         object : DoubleClickListener() {
             override fun onDoubleClick(e: MouseEvent): Boolean {
-                val route = getSelectedRoute()
-                if (route != null && route.canNavigate()) {
+                val route = getSelectedRoute() ?: return false
+
+                val project = route.module.project
+                if (!project.isInitialized) {
+                    // Ensure navigation happens only after the project is fully opened
+                    StartupManager.getInstance(project).runAfterOpened {
+                        if (route.canNavigate()) {
+                            route.navigate(true)
+                        }
+                    }
+                    return true
+                }
+
+                if (route.canNavigate()) {
                     route.navigate(true)
                     return true
                 }
