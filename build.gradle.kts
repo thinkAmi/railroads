@@ -192,10 +192,6 @@ tasks {
         gradleVersion = providers.gradleProperty("gradleVersion").get()
     }
 
-    test {
-        useJUnitPlatform()
-    }
-
     publishPlugin {
         dependsOn(patchChangelog)
     }

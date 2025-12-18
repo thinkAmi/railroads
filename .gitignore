@@ -14,8 +14,3 @@ marketplace-zip-signer-cli.jar
 
 # directory for verifier-cli
 bin
-
-# Agentic Coding Tools
-AGENTS.md
-.kiro
-.codex
