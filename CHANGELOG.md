@@ -4,6 +4,11 @@
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-02-07
+
+- fix: change the icon to display for the route by @thinkAmi in https://github.com/thinkAmi/railroads/pull/70
+- feat: Migrate to Kotlin Coroutines and support IDE 2025.3 by @thinkAmi in https://github.com/thinkAmi/railroads/pull/72
+
 ## [0.4.2] - 2025-11-26
 
 - fix: protect PSI access with ReadAction and run route parsing off the EDT by @thinkAmi in https://github.com/thinkAmi/railroads/pull/66
@@ -36,7 +41,8 @@
 
 - fix `pluginUntilBuild` to `Disable`
 
-[Unreleased]: https://github.com/thinkAmi/railroads/compare/v0.4.2...HEAD
+[Unreleased]: https://github.com/thinkAmi/railroads/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/thinkAmi/railroads/compare/v0.4.2...v0.5.0
 [0.4.2]: https://github.com/thinkAmi/railroads/compare/v0.4.0...v0.4.2
 [0.4.0]: https://github.com/thinkAmi/railroads/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/thinkAmi/railroads/compare/v0.2.1...v0.3.0
