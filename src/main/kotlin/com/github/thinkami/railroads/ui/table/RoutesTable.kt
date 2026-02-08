@@ -1,9 +1,9 @@
 package com.github.thinkami.railroads.ui.table
 
+import com.github.thinkami.railroads.helper.ProjectReadyScheduler
 import com.github.thinkami.railroads.models.RoutesTableModel
 import com.github.thinkami.railroads.models.routes.BaseRoute
 import com.intellij.openapi.actionSystem.*
-import com.intellij.openapi.startup.StartupManager
 import com.intellij.ui.PopupHandler
 import com.intellij.ui.table.JBTable
 import com.intellij.util.ArrayUtil
@@ -36,9 +36,9 @@ class RoutesTable: JBTable(), DataProvider {
                 val route = getSelectedRoute() ?: return false
 
                 val project = route.module.project
-                if (!project.isInitialized) {
-                    // Ensure navigation happens only after the project is fully opened
-                    StartupManager.getInstance(project).runAfterOpened {
+                if (!ProjectReadyScheduler.isReady(project)) {
+                    // Ensure navigation happens only after project initialization and smart mode.
+                    ProjectReadyScheduler.runWhenReady(project) {
                         if (route.canNavigate()) {
                             route.navigate(true)
                         }
@@ -50,6 +50,7 @@ class RoutesTable: JBTable(), DataProvider {
                     route.navigate(true)
                     return true
                 }
+
                 return false
             }
         }.installOn(this)

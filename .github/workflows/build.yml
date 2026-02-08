@@ -201,6 +201,20 @@ jobs:
       - name: Run Plugin Verification tasks
         run: ./gradlew verifyPlugin
 
+      - name: Fail on Internal API usage in verification reports
+        shell: bash
+        run: |
+          REPORT_DIR="${{ github.workspace }}/build/reports/pluginVerifier"
+          if [ ! -d "$REPORT_DIR" ]; then
+            echo "Plugin verifier report directory not found: $REPORT_DIR"
+            exit 1
+          fi
+
+          if grep -RInE "internal API|Internal API|ApiStatus\\.Internal|IntellijInternalApi|runAfterOpened\\(" "$REPORT_DIR"; then
+            echo "Detected possible internal API usage in plugin verification reports."
+            exit 1
+          fi
+
       # Collect Plugin Verifier Result
       - name: Collect Plugin Verifier Result
         if: ${{ always() }}
