@@ -1,12 +1,12 @@
 package com.github.thinkami.railroads.models.routes
 
+import com.github.thinkami.railroads.helper.ProjectReadyScheduler
 import com.github.thinkami.railroads.helper.PsiUtil
 import com.github.thinkami.railroads.models.RailsAction
 import com.github.thinkami.railroads.ui.RailroadIcon
 import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.module.Module
-import com.intellij.openapi.startup.StartupManager
 import com.intellij.openapi.fileEditor.OpenFileDescriptor
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.concurrency.AppExecutorUtil
@@ -29,37 +29,31 @@ class SimpleRoute(
     override fun navigate(requestFocus: Boolean) {
         val project = module.project
 
-        // Perform navigation only after the project is fully opened
-        if (!project.isInitialized) {
-            StartupManager.getInstance(project).runAfterOpened {
-                navigate(requestFocus)
-            }
-            return
-        }
+        ProjectReadyScheduler.runWhenReady(project) {
+            // To avoid heavy work on the EDT, precompute the target VirtualFile and offset
+            // in a background ReadAction.nonBlocking, and open the file on the EDT only.
+            ReadAction
+                .nonBlocking<Pair<VirtualFile, Int>?> {
+                    // Complete index/PSI lookups inside the background ReadAction
+                    railsAction.update(module, controllerName, actionName)
+                    val method = railsAction.psiMethod
+                    val clazz = railsAction.psiClass
 
-        // To avoid heavy work on the EDT, precompute the target VirtualFile and offset
-        // in a background ReadAction.nonBlocking, and open the file on the EDT only.
-        ReadAction
-            .nonBlocking<Pair<VirtualFile, Int>?> {
-                // Complete index/PSI lookups inside the background ReadAction
-                railsAction.update(module, controllerName, actionName)
-                val method = railsAction.psiMethod
-                val clazz = railsAction.psiClass
-
-                // Priority: method -> class
-                val element = method ?: clazz ?: return@nonBlocking null
-                val vFile = element.containingFile?.virtualFile ?: return@nonBlocking null
-                val offset = element.textOffset
-                Pair(vFile, offset)
-            }
-            .inSmartMode(project) // Do not execute in Dumb mode
-            .expireWith(project)  // Cancel when the project is disposed
-            .finishOnUiThread(ModalityState.defaultModalityState()) { target ->
-                if (target != null) {
-                    OpenFileDescriptor(project, target.first, target.second).navigate(requestFocus)
+                    // Priority: method -> class
+                    val element = method ?: clazz ?: return@nonBlocking null
+                    val vFile = element.containingFile?.virtualFile ?: return@nonBlocking null
+                    val offset = element.textOffset
+                    Pair(vFile, offset)
                 }
-            }
-            .submit(AppExecutorUtil.getAppExecutorService())
+                .inSmartMode(project) // Do not execute in Dumb mode
+                .expireWith(project)  // Cancel when the project is disposed
+                .finishOnUiThread(ModalityState.defaultModalityState()) { target ->
+                    if (target != null) {
+                        OpenFileDescriptor(project, target.first, target.second).navigate(requestFocus)
+                    }
+                }
+                .submit(AppExecutorUtil.getAppExecutorService())
+        }
     }
 
     override fun canNavigate(): Boolean {
