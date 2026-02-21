@@ -31,10 +31,14 @@ The following repository secrets must be configured:
 
 ## Release workflow overview
 1. A merge to `main` triggers the `Build` workflow.
-2. `releaseDraft` keeps only the current target version draft, resets the target draft/tag, and creates a new draft release with a zip asset already attached.
-3. A maintainer reviews and publishes that draft from the Releases page.
-4. Publishing the draft triggers the `Release` workflow.
-5. The `Release` workflow runs `publishPlugin` and opens a changelog update PR.
+2. `releaseDraft` runs three preparation guards before draft creation:
+- Delete all draft releases/tags (best-effort)
+- Guard: published target release must fail
+- Guard: target tag must match current workflow SHA
+3. After those guards pass, `releaseDraft` creates a new draft release with a zip asset already attached.
+4. A maintainer reviews and publishes that draft from the Releases page.
+5. Publishing the draft triggers the `Release` workflow.
+6. The `Release` workflow runs `publishPlugin` and opens a changelog update PR.
 
 ## Standard release procedure
 1. Update `pluginVersion` in `/Users/thinkami/project/railroads/gradle.properties`.
@@ -72,7 +76,9 @@ The following repository secrets must be configured:
 When `pluginVersion` is updated from `0.5.2` to `0.6.0` and merged to `main`, non-target draft releases are removed automatically and `v0.6.0` is created as the only draft.
 
 ### `v0.5.2 -> v0.5.2` (same-version rerun)
-When the same version is merged again, the workflow removes the existing target draft/tag and recreates the `v0.5.2` draft from the latest `main` commit.
+When the same version is merged again, the workflow removes the existing target draft and recreates the `v0.5.2` draft from the latest `main` commit.
+If the target tag exists and points to a different commit, the workflow attempts to delete that tag ref first.
+If repository rules block deleting the target tag (`HTTP 422`), `Build` intentionally fails.
 
 ### Published target already exists
 If a non-draft release already exists for the target tag, `Build` intentionally fails with a guard message. Bump `pluginVersion` and rerun via a new merge.
@@ -113,6 +119,18 @@ Action:
 1. Bump `pluginVersion` to a new version.
 2. Merge to `main` again.
 
+### Build fails while deleting target tag with `HTTP 422`
+Cause:
+- Repository rules prevent deleting the target tag ref used for same-version reruns.
+
+Action:
+1. Bump `pluginVersion` and merge again, or update repository tag rules for maintainers.
+2. Re-run `Build` after one of the above is applied.
+
+Notes:
+- Draft release/tag cleanup is best-effort and does not stop the job.
+- Target tag deletion is strict; `HTTP 422` and unexpected errors stop the job to avoid a mismatched draft/tag state.
+
 ### Draft creation fails due to asset count check
 Cause:
 - The build did not produce exactly one zip in `build/distributions`.
@@ -121,6 +139,13 @@ Action:
 1. Inspect the `Create Release Draft` step logs.
 2. Fix build output conditions.
 3. Merge and rerun.
+
+### Build logs and secret safety
+The workflow keeps logs intentionally minimal and focuses on failure messages.
+The workflow does not print:
+- `GITHUB_TOKEN`
+- Full environment variable dumps
+- Raw API response payloads or stderr bodies
 
 ### Changelog PR is blocked with `Code scanning is waiting for results from CodeQL`
 Cause:
