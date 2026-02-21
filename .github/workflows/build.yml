@@ -246,52 +246,82 @@ jobs:
       - name: Fetch Sources
         uses: actions/checkout@v4
 
-      # Keep only the draft release for the current plugin version.
-      - name: Cleanup Non-Target Draft Releases
+      # Delete all draft releases and related tags (best-effort cleanup).
+      - name: Delete all draft releases/tags (best-effort)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          TARGET_TAG="v${{ needs.build.outputs.version }}"
+          if ! DRAFT_RELEASES="$(gh api --paginate "repos/{owner}/{repo}/releases" \
+            --jq '.[] | select(.draft == true) | "\(.id)\t\(.tag_name)"')"; then
+            echo "Failed to list draft releases."
+            exit 1
+          fi
 
           while IFS=$'\t' read -r RELEASE_ID TAG_NAME; do
             [ -z "$RELEASE_ID" ] && continue
 
-            echo "Deleting old draft release: $TAG_NAME ($RELEASE_ID)"
-            gh api -X DELETE "repos/{owner}/{repo}/releases/$RELEASE_ID"
+            gh api -X DELETE "repos/{owner}/{repo}/releases/$RELEASE_ID" >/dev/null 2>&1 || true
+            gh api -X DELETE "repos/{owner}/{repo}/git/refs/tags/$TAG_NAME" >/dev/null 2>&1 || true
+          done <<< "$DRAFT_RELEASES"
 
-            # Remove stale tag refs from deleted draft releases to avoid tag reuse confusion.
-            if gh api "repos/{owner}/{repo}/git/ref/tags/$TAG_NAME" >/dev/null 2>&1; then
-              echo "Deleting old tag ref: $TAG_NAME"
-              gh api -X DELETE "repos/{owner}/{repo}/git/refs/tags/$TAG_NAME"
-            fi
-          done < <(
-            gh api --paginate "repos/{owner}/{repo}/releases" \
-              --jq ".[] | select(.draft == true and .tag_name != \"$TARGET_TAG\") | \"\\(.id)\\t\\(.tag_name)\""
-          )
-
-      # Reset the target draft release and tag only for the current plugin version.
-      - name: Reset Target Draft Release
+      # Guard: fail when the target version already has a published release.
+      - name: "Guard: published target release must fail"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TARGET_TAG="v${{ needs.build.outputs.version }}"
 
-          RELEASE_ID="$(gh api "repos/{owner}/{repo}/releases/tags/$TARGET_TAG" --jq '.id' 2>/dev/null || true)"
-          if [ -n "$RELEASE_ID" ]; then
-            IS_DRAFT="$(gh api "repos/{owner}/{repo}/releases/tags/$TARGET_TAG" --jq '.draft')"
-            if [ "$IS_DRAFT" != "true" ]; then
+          TARGET_RELEASE_ERROR="$(mktemp)"
+          if TARGET_RELEASE="$(gh api "repos/{owner}/{repo}/releases/tags/$TARGET_TAG" --jq '[.id, .draft] | @tsv' 2>"$TARGET_RELEASE_ERROR")"; then
+            IFS=$'\t' read -r _ TARGET_RELEASE_IS_DRAFT <<< "$TARGET_RELEASE"
+            if [ "$TARGET_RELEASE_IS_DRAFT" != "true" ]; then
+              rm -f "$TARGET_RELEASE_ERROR"
               echo "Release $TARGET_TAG already exists and is not a draft. Update pluginVersion before merging."
               exit 1
             fi
+          else
+            if ! grep -q "HTTP 404" "$TARGET_RELEASE_ERROR"; then
+              rm -f "$TARGET_RELEASE_ERROR"
+              echo "Failed to inspect target release."
+              exit 1
+            fi
+          fi
+          rm -f "$TARGET_RELEASE_ERROR"
 
-            echo "Deleting existing draft release: $TARGET_TAG"
-            gh api -X DELETE "repos/{owner}/{repo}/releases/$RELEASE_ID"
+      # Guard: target tag must match the workflow commit SHA.
+      - name: "Guard: target tag must match current workflow SHA"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TARGET_TAG="v${{ needs.build.outputs.version }}"
+          TARGET_SHA="${{ github.sha }}"
+
+          TARGET_TAG_ERROR="$(mktemp)"
+          if TARGET_TAG_SHA="$(gh api "repos/{owner}/{repo}/git/ref/tags/$TARGET_TAG" --jq '.object.sha' 2>"$TARGET_TAG_ERROR")"; then
+            rm -f "$TARGET_TAG_ERROR"
+          else
+            if grep -q "HTTP 404" "$TARGET_TAG_ERROR"; then
+              TARGET_TAG_SHA=""
+              rm -f "$TARGET_TAG_ERROR"
+            else
+              rm -f "$TARGET_TAG_ERROR"
+              echo "Failed to inspect target tag ref."
+              exit 1
+            fi
           fi
 
-          # Remove a stale tag so the new draft always points to the latest commit on main.
-          if gh api "repos/{owner}/{repo}/git/ref/tags/$TARGET_TAG" >/dev/null 2>&1; then
-            echo "Deleting existing tag ref: $TARGET_TAG"
-            gh api -X DELETE "repos/{owner}/{repo}/git/refs/tags/$TARGET_TAG"
+          if [ -n "$TARGET_TAG_SHA" ] && [ "$TARGET_TAG_SHA" != "$TARGET_SHA" ]; then
+            DELETE_TARGET_TAG_ERROR="$(mktemp)"
+            if ! gh api -X DELETE "repos/{owner}/{repo}/git/refs/tags/$TARGET_TAG" >/dev/null 2>"$DELETE_TARGET_TAG_ERROR"; then
+              if grep -q "HTTP 404" "$DELETE_TARGET_TAG_ERROR"; then
+                :
+              else
+                rm -f "$DELETE_TARGET_TAG_ERROR"
+                echo "Failed to delete target tag ref. If repository rules block deletion, bump pluginVersion or update repository tag rules."
+                exit 1
+              fi
+            fi
+            rm -f "$DELETE_TARGET_TAG_ERROR"
           fi
 
       # Download plugin zip prepared in the build job.
