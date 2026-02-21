@@ -316,7 +316,9 @@ jobs:
           fi
           ASSET="${ASSETS[0]}"
 
+          # Pin missing-tag creation to this workflow run's commit to avoid tag/asset mismatches on reruns.
           gh release create "v${{ needs.build.outputs.version }}" \
+            --target "${{ github.sha }}" \
             --draft \
             --title "v${{ needs.build.outputs.version }}" \
             --notes "$(cat << 'EOM'
