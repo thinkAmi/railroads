@@ -11,6 +11,9 @@ name: Run UI Tests
 on:
   workflow_dispatch
 
+permissions:
+  contents: read
+
 jobs:
 
   testUI:
