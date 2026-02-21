@@ -10,6 +10,7 @@
 - feat: Migrate to Kotlin Coroutines and support IDE 2025.3 by @thinkAmi in https://github.com/thinkAmi/railroads/pull/72
 - fix: replace internal API usage by @thinkAmi in https://github.com/thinkAmi/railroads/pull/74
 
+
 ## [0.5.0] - 2026-02-07
 
 - fix: change the icon to display for the route by @thinkAmi in https://github.com/thinkAmi/railroads/pull/70
