@@ -1,6 +1,7 @@
 # GitHub Actions Workflow created for handling the release process based on the draft release prepared with the Build workflow.
 # Running the publishPlugin task requires all following secrets to be provided: PUBLISH_TOKEN, PRIVATE_KEY, PRIVATE_KEY_PASSWORD, CERTIFICATE_CHAIN.
 # See https://plugins.jetbrains.com/docs/intellij/plugin-signing.html for more information.
+# For release operations and troubleshooting, see docs/release-process.md.
 
 name: Release
 on:
@@ -66,16 +67,13 @@ jobs:
           PRIVATE_KEY_PASSWORD: ${{ secrets.PRIVATE_KEY_PASSWORD }}
         run: ./gradlew publishPlugin
 
-      # Upload artifact as a release asset
-      - name: Upload Release Asset
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload ${{ github.event.release.tag_name }} ./build/distributions/*
-
       # Create a pull request
       - name: Create Pull Request
         if: ${{ steps.properties.outputs.changelog != '' }}
         env:
+          # This workflow uses GITHUB_TOKEN to create the changelog PR.
+          # If CodeQL remains in "waiting for results", maintainers should add a minimal
+          # no-op commit to the PR branch from the GitHub UI to re-trigger checks.
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           VERSION="${{ github.event.release.tag_name }}"
@@ -96,6 +94,6 @@ jobs:
 
           gh pr create \
             --title "Changelog update - \`$VERSION\`" \
-            --body "Current pull request contains patched \`CHANGELOG.md\` file for the \`$VERSION\` version." \
+            --body "Current pull request contains patched \`CHANGELOG.md\` file for the \`$VERSION\` version.\n\nIf CodeQL remains in waiting status, add a minimal no-op commit (for example from the GitHub UI) to this branch and wait for checks to refresh." \
             --label "$LABEL" \
             --head $BRANCH

@@ -86,6 +86,14 @@ jobs:
           name: ${{ steps.artifact.outputs.filename }}
           path: ./build/distributions/content/*/*
 
+      # Store plugin zip for attaching it to a release draft.
+      - name: Upload release package
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-package
+          path: ./build/distributions/*.zip
+          if-no-files-found: error
+
   # Run tests and upload a code coverage report
   test:
     name: Test
@@ -223,8 +231,8 @@ jobs:
           name: pluginVerifier-result
           path: ${{ github.workspace }}/build/reports/pluginVerifier
 
-  # Prepare a draft release for GitHub Releases page for the manual verification
-  # If accepted and published, release workflow would be triggered
+  # Prepare a draft release for GitHub Releases page for the manual verification.
+  # For release operations and troubleshooting, see docs/release-process.md.
   releaseDraft:
     name: Release draft
     if: github.event_name != 'pull_request'
@@ -238,24 +246,81 @@ jobs:
       - name: Fetch Sources
         uses: actions/checkout@v4
 
-      # Remove old release drafts by using the curl request for the available releases with a draft flag
-      - name: Remove Old Release Drafts
+      # Keep only the draft release for the current plugin version.
+      - name: Cleanup Non-Target Draft Releases
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh api repos/{owner}/{repo}/releases \
-            --jq '.[] | select(.draft == true) | .id' \
-            | xargs -I '{}' gh api -X DELETE repos/{owner}/{repo}/releases/{}
+          TARGET_TAG="v${{ needs.build.outputs.version }}"
+
+          while IFS=$'\t' read -r RELEASE_ID TAG_NAME; do
+            [ -z "$RELEASE_ID" ] && continue
+
+            echo "Deleting old draft release: $TAG_NAME ($RELEASE_ID)"
+            gh api -X DELETE "repos/{owner}/{repo}/releases/$RELEASE_ID"
+
+            # Remove stale tag refs from deleted draft releases to avoid tag reuse confusion.
+            if gh api "repos/{owner}/{repo}/git/ref/tags/$TAG_NAME" >/dev/null 2>&1; then
+              echo "Deleting old tag ref: $TAG_NAME"
+              gh api -X DELETE "repos/{owner}/{repo}/git/refs/tags/$TAG_NAME"
+            fi
+          done < <(
+            gh api --paginate "repos/{owner}/{repo}/releases" \
+              --jq ".[] | select(.draft == true and .tag_name != \"$TARGET_TAG\") | \"\\(.id)\\t\\(.tag_name)\""
+          )
+
+      # Reset the target draft release and tag only for the current plugin version.
+      - name: Reset Target Draft Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TARGET_TAG="v${{ needs.build.outputs.version }}"
+
+          RELEASE_ID="$(gh api "repos/{owner}/{repo}/releases/tags/$TARGET_TAG" --jq '.id' 2>/dev/null || true)"
+          if [ -n "$RELEASE_ID" ]; then
+            IS_DRAFT="$(gh api "repos/{owner}/{repo}/releases/tags/$TARGET_TAG" --jq '.draft')"
+            if [ "$IS_DRAFT" != "true" ]; then
+              echo "Release $TARGET_TAG already exists and is not a draft. Update pluginVersion before merging."
+              exit 1
+            fi
+
+            echo "Deleting existing draft release: $TARGET_TAG"
+            gh api -X DELETE "repos/{owner}/{repo}/releases/$RELEASE_ID"
+          fi
+
+          # Remove a stale tag so the new draft always points to the latest commit on main.
+          if gh api "repos/{owner}/{repo}/git/ref/tags/$TARGET_TAG" >/dev/null 2>&1; then
+            echo "Deleting existing tag ref: $TARGET_TAG"
+            gh api -X DELETE "repos/{owner}/{repo}/git/refs/tags/$TARGET_TAG"
+          fi
+
+      # Download plugin zip prepared in the build job.
+      - name: Download Release Package
+        uses: actions/download-artifact@v4
+        with:
+          name: release-package
+          path: ./build/distributions
 
       # Create a new release draft which is not publicly visible and requires manual acceptance
       - name: Create Release Draft
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          # Collect release zip paths into an array so we can validate the result deterministically.
+          mapfile -t ASSETS < <(find ./build/distributions -maxdepth 1 -name '*.zip' -type f)
+          # The release draft must contain exactly one plugin archive; fail fast on missing or extra files.
+          if [ "${#ASSETS[@]}" -ne 1 ]; then
+            echo "Expected exactly one release zip, found ${#ASSETS[@]}"
+            printf '%s\n' "${ASSETS[@]}"
+            exit 1
+          fi
+          ASSET="${ASSETS[0]}"
+
           gh release create "v${{ needs.build.outputs.version }}" \
             --draft \
             --title "v${{ needs.build.outputs.version }}" \
             --notes "$(cat << 'EOM'
           ${{ needs.build.outputs.changelog }}
           EOM
-          )"
+          )" \
+            "$ASSET"

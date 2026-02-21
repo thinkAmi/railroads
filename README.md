@@ -64,6 +64,11 @@ There was a great plugin called [Railways](https://plugins.jetbrains.com/plugin/
   Download the [latest release](https://github.com/thinkAmi/railroads/releases/latest) and install it manually using
   <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>⚙️</kbd> > <kbd>Install plugin from disk...</kbd>
 
+## Release process (for maintainers)
+
+For the canonical release runbook, see
+[`docs/release-process.md`](docs/release-process.md).
+
 ## IntelliJ IDEA Ultimate settings for development
 
 - Open IntelliJ IDEA.
