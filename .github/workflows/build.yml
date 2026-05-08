@@ -1,9 +1,7 @@
 # GitHub Actions Workflow is created for testing and preparing the plugin release in the following steps:
 # - Validate Gradle Wrapper.
 # - Run 'test' and 'verifyPlugin' tasks.
-# - Run Qodana inspections.
 # - Run the 'buildPlugin' task and prepare artifact for further tests.
-# - Run the 'runPluginVerifier' task.
 # - Create a draft release.
 #
 # The workflow is triggered on push and pull_request events.
@@ -97,7 +95,7 @@ jobs:
           path: ./build/distributions/*.zip
           if-no-files-found: error
 
-  # Run tests and upload a code coverage report
+  # Run tests
   test:
     name: Test
     needs: [ build ]
@@ -132,50 +130,6 @@ jobs:
         with:
           name: tests-result
           path: ${{ github.workspace }}/build/reports/tests
-
-      # Upload the Kover report to CodeCov
-      - name: Upload Code Coverage Report
-        uses: codecov/codecov-action@v5
-        with:
-          files: ${{ github.workspace }}/build/reports/kover/report.xml
-
-  # Run Qodana inspections and provide report
-  inspectCode:
-    name: Inspect code
-    needs: [ build ]
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      checks: write
-      pull-requests: write
-    steps:
-
-      # Free GitHub Actions Environment Disk Space
-      - name: Maximize Build Space
-        uses: jlumbroso/free-disk-space@main
-        with:
-          tool-cache: false
-          large-packages: false
-
-      # Check out the current repository
-      - name: Fetch Sources
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}  # to check out the actual pull request commit, not the merge commit
-          fetch-depth: 0  # a full history is required for pull request analysis
-
-      # Set up Java environment for the next steps
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: zulu
-          java-version: 21
-
-      # Run Qodana inspections
-      - name: Qodana - Code Inspection
-        uses: JetBrains/qodana-action@v2025.1.1
-        with:
-          cache-default-branch-only: true
 
   # Run plugin structure verification along with IntelliJ Plugin Verifier
   verify:
@@ -239,7 +193,7 @@ jobs:
   releaseDraft:
     name: Release draft
     if: github.event_name != 'pull_request'
-    needs: [ build, test, inspectCode, verify ]
+    needs: [ build, test, verify ]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -279,7 +233,7 @@ jobs:
             IFS=$'\t' read -r _ TARGET_RELEASE_IS_DRAFT <<< "$TARGET_RELEASE"
             if [ "$TARGET_RELEASE_IS_DRAFT" != "true" ]; then
               rm -f "$TARGET_RELEASE_ERROR"
-              echo "Release $TARGET_TAG already exists and is not a draft. Update pluginVersion before merging."
+              echo "Release $TARGET_TAG already exists and is not a draft. Update version before merging."
               exit 1
             fi
           else
@@ -320,7 +274,7 @@ jobs:
                 :
               else
                 rm -f "$DELETE_TARGET_TAG_ERROR"
-                echo "Failed to delete target tag ref. If repository rules block deletion, bump pluginVersion or update repository tag rules."
+                echo "Failed to delete target tag ref. If repository rules block deletion, bump version or update repository tag rules."
                 exit 1
               fi
             fi

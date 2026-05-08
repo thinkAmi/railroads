@@ -4,6 +4,18 @@
     <name>Railroads</name>
     <vendor>thinkAmi</vendor>
     <category>Navigation</category>
+    <description><![CDATA[
+        <p>Railroads is a plugin for RubyMine that lists rails routes results and transitions to files.</p>
+
+        <p>There was a great plugin called <a href="https://plugins.jetbrains.com/plugin/7110-railways">Railways</a> that I loved very much. However, since IDE version 2023.3, it is no longer available for installation, so I created this plugin.</p>
+
+        <h2>Features</h2>
+        <ul>
+            <li>Displays routes of Ruby on Rails application/engine in a separate "Railroads" panel</li>
+            <li>The listed path and name can be copied from the context menu</li>
+            <li>Provides quick routes filtering by route path, controller/action or route name</li>
+        </ul>
+    ]]></description>
 
 	<depends>com.intellij.modules.platform</depends>
 
