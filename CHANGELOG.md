@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+- BREAKING CHANGE: Raise the minimum supported IDE version to 2025.3, ending support for 2024.x, 2025.1, and 2025.2.
+
 ## [0.5.1] - 2026-02-08
 
 - fix: change the icon to display for the route by @thinkAmi in https://github.com/thinkAmi/railroads/pull/70

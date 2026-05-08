@@ -9,9 +9,9 @@ pluginManagement {
     plugins {
         id("org.gradle.toolchains.foojay-resolver-convention") version "0.8.0"
         id("org.jetbrains.changelog") version "2.2.1"
-        id("org.jetbrains.intellij.platform") version "2.8.0"
-        id("org.jetbrains.intellij.platform.settings") version "2.8.0"
-        id("org.jetbrains.kotlin.jvm") version "2.1.20"
+        id("org.jetbrains.intellij.platform") version "2.16.0"
+        id("org.jetbrains.intellij.platform.settings") version "2.16.0"
+        id("org.jetbrains.kotlin.jvm") version "2.2.20"
     }
 }
 
