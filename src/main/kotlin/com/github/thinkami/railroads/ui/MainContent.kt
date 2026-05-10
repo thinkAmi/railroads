@@ -27,6 +27,7 @@ class MainContent {
     private lateinit var runRailsRoutesMessage: Cell<JLabel>
     private lateinit var loadingMessage: Cell<JLabel>
     private lateinit var raiseErrorMessage: Cell<JLabel>
+    private lateinit var configurationIssueMessage: Cell<JLabel>
     private var currentRoute: BaseRoute? = null
 
     var content: DialogPanel
@@ -123,6 +124,11 @@ class MainContent {
             row {
                 raiseErrorMessage = label("An error has occurred, please check Notification").align(AlignX.CENTER).align(AlignY.CENTER)
                 raiseErrorMessage.component.name = "raiseErrorMessage"
+            }.topGap(TopGap.MEDIUM).bottomGap(BottomGap.MEDIUM).resizableRow().visible(false)
+
+            row {
+                configurationIssueMessage = label("").align(AlignX.CENTER).align(AlignY.CENTER)
+                configurationIssueMessage.component.name = "configurationIssueMessage"
             }.topGap(TopGap.MEDIUM).bottomGap(BottomGap.MEDIUM).resizableRow().visible(false)
         }
     }
