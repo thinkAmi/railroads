@@ -10,8 +10,6 @@ import com.intellij.notification.NotificationType
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.application.readAction
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.project.modules
-import com.intellij.openapi.roots.ModuleRootManager
 import com.intellij.openapi.ui.MessageType
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.openapi.progress.ProgressManager
@@ -20,7 +18,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import com.github.thinkami.railroads.services.RoutesCoroutineService
 import org.jetbrains.plugins.ruby.gem.RubyGemExecutionContext
-import org.jetbrains.plugins.ruby.rails.model.RailsApp
 
 // Coroutine-based route retrieval process.
 // Does not display progress dialogs or cancellation options.
@@ -37,26 +34,37 @@ fun launchRoutes(project: Project) {
             mainView.renderLoadingWithUiThread()
         }
 
-        val module = project.modules.firstOrNull()
-        if (module == null) {
-            withContext(Dispatchers.EDT) { mainView.renderDefaultWithUiThread() }
-            return@launch
+        val ready: RoutesPreflightResult.Ready = when (val result = resolveRoutesPreflight(project)) {
+            RoutesPreflightResult.NoModule -> {
+                notifyConfigurationIssueOnEdt(
+                    project, mainView,
+                    "Railroads: No module found",
+                    "This project has no modules. Open a project containing a Rails application."
+                )
+                return@launch
+            }
+            RoutesPreflightResult.NotRailsApplication -> {
+                notifyConfigurationIssueOnEdt(
+                    project, mainView,
+                    "Railroads: Not a Rails project",
+                    "No Rails application was found in the current module."
+                )
+                return@launch
+            }
+            RoutesPreflightResult.MissingRubySdk -> {
+                notifyConfigurationIssueOnEdt(
+                    project, mainView,
+                    "Railroads: Ruby interpreter is not configured",
+                    "Configure the Ruby SDK in Project Structure → Modules → SDK to run rails routes."
+                )
+                return@launch
+            }
+            is RoutesPreflightResult.Ready -> result
         }
 
-        val app = RailsApp.fromModule(module)
-        if (app?.railsApplicationRoot == null) {
-            withContext(Dispatchers.EDT) { mainView.renderDefaultWithUiThread() }
-            return@launch
-        }
-
-        val moduleContentRoot = app.railsApplicationRoot!!.presentableUrl
-        val manager = ModuleRootManager.getInstance(module)
-
-        val sdk = manager.sdk
-        if (sdk == null) {
-            withContext(Dispatchers.EDT) { mainView.renderDefaultWithUiThread() }
-            return@launch
-        }
+        val module = ready.module
+        val moduleContentRoot = ready.moduleContentRoot
+        val sdk = ready.sdk
 
         val output: ProcessOutput = try {
             var result: ProcessOutput? = null
@@ -112,5 +120,20 @@ fun launchRoutes(project: Project) {
                 "Finished rails routes"
             )
         }
+    }
+}
+
+private suspend fun notifyConfigurationIssueOnEdt(
+    project: Project,
+    mainView: MainView,
+    title: String,
+    message: String
+) {
+    withContext(Dispatchers.EDT) {
+        NotificationGroupManager.getInstance()
+            .getNotificationGroup("railroadsNotification")
+            .createNotification(title, message, NotificationType.WARNING)
+            .notify(project)
+        mainView.renderConfigurationIssueWithUiThread(message)
     }
 }

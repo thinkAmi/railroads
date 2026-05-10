@@ -32,6 +32,7 @@ class MainView(toolWindow: ToolWindow) {
             switchRunRailsRoutesMessage(true)
             switchLoadingMessage(false)
             switchRaiseErrorMessage(false)
+            switchConfigurationIssueMessage(false)
         }
     }
 
@@ -43,6 +44,7 @@ class MainView(toolWindow: ToolWindow) {
             switchRunRailsRoutesMessage(false)
             switchLoadingMessage(true)
             switchRaiseErrorMessage(false)
+            switchConfigurationIssueMessage(false)
         }
     }
 
@@ -53,6 +55,17 @@ class MainView(toolWindow: ToolWindow) {
         switchRunRailsRoutesMessage(false)
         switchLoadingMessage(false)
         switchRaiseErrorMessage(true)
+        switchConfigurationIssueMessage(false)
+    }
+
+    fun renderConfigurationIssueWithUiThread(message: String) {
+        switchHeaderMenu(true)
+        switchRouteTable(false)
+        switchRouteLabels(false)
+        switchRunRailsRoutesMessage(false)
+        switchLoadingMessage(false)
+        switchRaiseErrorMessage(false)
+        switchConfigurationIssueMessage(true, message)
     }
 
     fun renderRoutesWithUiThread(routes: List<BaseRoute>) {
@@ -63,6 +76,7 @@ class MainView(toolWindow: ToolWindow) {
             switchRunRailsRoutesMessage(false)
             switchLoadingMessage(false)
             switchRaiseErrorMessage(false)
+            switchConfigurationIssueMessage(false)
 
             val model = tableComponent.model as RoutesTableModel
             model.updateTableDataFromRoutes(routes)
@@ -97,9 +111,20 @@ class MainView(toolWindow: ToolWindow) {
         }
     }
 
+    private fun switchConfigurationIssueMessage(isVisible: Boolean, text: String? = null) {
+        panelComponent.components.filterIsInstance<JLabel>().filter {
+            it.name == "configurationIssueMessage"
+        }.map {
+            if (text != null) {
+                it.text = text
+            }
+            it.isVisible = isVisible
+        }
+    }
+
     private fun switchRouteLabels(isVisible: Boolean) {
         panelComponent.components.filterIsInstance<JLabel>().filter {
-            it.name != "routesCounter" && it.name != "runRailsRoutesMessage"
+            it.name != "routesCounter" && it.name != "runRailsRoutesMessage" && it.name != "configurationIssueMessage"
         }.map {
             it.isVisible = isVisible
         }
