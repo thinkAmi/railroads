@@ -30,8 +30,10 @@ There was a great plugin called [Railways](https://plugins.jetbrains.com/plugin/
 
 - Railroads version 0.2.* and earlier
   - Supports IDE versions from 2023.3.* up to 2024.*
-- Railroads version 0.3.* and later
+- Railroads version 0.3.* through 0.5.1
   - Supports IDE versions 2024.2.* and later
+- Railroads version 0.6.0 and later
+  - Supports IDE versions 2025.3.* and later
 
 ## TODOs
 
@@ -69,9 +71,10 @@ For the canonical release runbook, see
 
 This project keeps Gradle configuration split by responsibility:
 
-- `settings.gradle.kts` manages Gradle plugin versions and shared repositories.
+- `settings.gradle.kts` manages Gradle plugin versions, including Kotlin and IntelliJ Platform Gradle Plugin versions, and shared repositories.
 - `build.gradle.kts` manages project dependencies, IntelliJ Platform configuration, and tasks.
 - `gradle.properties` contains project-wide values that maintainers update, including Railroads IDE compatibility settings.
+- `gradle/wrapper/gradle-wrapper.properties` manages the Gradle Wrapper version.
 
 ## IntelliJ IDEA Ultimate settings for development
 

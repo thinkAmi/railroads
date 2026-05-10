@@ -74,6 +74,10 @@ dependencies {
         }
 
         addPlugin("org.jetbrains.plugins.ruby")
+        // The Ruby plugin registers JSON file type extensions during test runtime initialization.
+        // RubyMine bundles the JSON module, but the test sandbox must include it explicitly;
+        // otherwise 2025.3 tests fail with "Trying to add extensions to non-registered file type JSON".
+        testBundledModule("com.intellij.modules.json")
 
         testFramework(TestFrameworkType.Platform)
     }
