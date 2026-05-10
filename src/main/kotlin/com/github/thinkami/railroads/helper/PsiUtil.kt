@@ -52,8 +52,11 @@ class PsiUtil {
                 // Rails routing example: /rails/conductor/action_mailbox/inbound_emails
                 val name = item.fqnWithNesting.fullPath
 
-                if (qualifiedName.equals(name, ignoreCase = true)) {
-                    return item as RContainer
+                // The StubIndex can return non-RContainer elements such as RConstantImpl
+                // (e.g. when `include SomeConstant` references a non-module constant).
+                // Skip them to avoid ClassCastException.
+                if (qualifiedName.equals(name, ignoreCase = true) && item is RContainer) {
+                    return item
                 }
             }
 
