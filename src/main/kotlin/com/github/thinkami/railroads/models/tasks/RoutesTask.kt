@@ -27,11 +27,10 @@ fun launchRoutes(project: Project) {
     val scope = service.scope
     scope.launch {
         val toolWindow = ToolWindowManager.getInstance(project).getToolWindow("Railroads") ?: return@launch
-        val mainView = MainView(toolWindow)
 
-        // UI: Loading indicator (EDT)
-        withContext(Dispatchers.EDT) {
-            mainView.renderLoadingWithUiThread()
+        // MainView's init walks the Swing component tree, so it must be constructed on the EDT.
+        val mainView = withContext(Dispatchers.EDT) {
+            MainView(toolWindow).also { it.renderLoadingWithUiThread() }
         }
 
         val ready: RoutesPreflightResult.Ready = when (val result = resolveRoutesPreflight(project)) {
