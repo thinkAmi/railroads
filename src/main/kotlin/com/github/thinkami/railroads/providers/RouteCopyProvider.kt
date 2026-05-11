@@ -18,7 +18,7 @@ open class RouteCopyProvider(private val routes: Array<BaseRoute>?): TextCopyPro
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread {
-        return ActionUpdateThread.BGT
+        return ActionUpdateThread.EDT
     }
 
     open fun getCopyValue(route: BaseRoute): String {
