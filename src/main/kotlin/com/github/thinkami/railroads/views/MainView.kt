@@ -13,11 +13,19 @@ import javax.swing.JButton
 import javax.swing.JLabel
 
 class MainView(toolWindow: ToolWindow) {
-    private val panelComponent = toolWindow.component.components.filterIsInstance<DialogPanel>().first()
-    private val scrollComponent = panelComponent.components.filterIsInstance<JBScrollPane>().first()
+    private val panelComponent: DialogPanel
+    private val scrollComponent: JBScrollPane
     private val tableComponent: JBTable
 
     init {
+        // Swing component tree lookups below must run on the EDT. Asserting before any
+        // property is initialized ensures the contract is enforced at construction time,
+        // since Kotlin runs property initializers in declaration order — putting the
+        // initializers inside `init` is the only way to guarantee the assertion fires
+        // before the first Swing tree access.
+        ApplicationManager.getApplication().assertIsDispatchThread()
+        panelComponent = toolWindow.component.components.filterIsInstance<DialogPanel>().first()
+        scrollComponent = panelComponent.components.filterIsInstance<JBScrollPane>().first()
         val viewportComponent = scrollComponent.components.filterIsInstance<JBViewport>().first {
             it.components.filterIsInstance<JBTable>().isNotEmpty()
         }
