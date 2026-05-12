@@ -4,6 +4,12 @@
 
 ## [Unreleased]
 
+- BREAKING CHANGE: Raised the minimum supported IDE version to 2025.3. IDE 2024.x, 2025.1, and 2025.2 are no longer supported.
+- Improved compatibility with IDE 2026, fixing startup errors and route-loading/copy-action failures. ([#96](https://github.com/thinkAmi/railroads/pull/96), [#99](https://github.com/thinkAmi/railroads/pull/99), [#100](https://github.com/thinkAmi/railroads/pull/100))
+- Rails Routes now shows a notification when the Ruby SDK or Rails configuration is missing or misconfigured, instead of failing silently. ([#97](https://github.com/thinkAmi/railroads/pull/97))
+- Rails Routes now saves unsaved files before loading routes, making recent edits more reliably reflected in the route list. ([#98](https://github.com/thinkAmi/railroads/pull/98))
+- Improved route resolution stability to avoid intermittent failures while loading routes. ([#98](https://github.com/thinkAmi/railroads/pull/98))
+
 ## [0.5.1] - 2026-02-08
 
 - fix: change the icon to display for the route by @thinkAmi in https://github.com/thinkAmi/railroads/pull/70

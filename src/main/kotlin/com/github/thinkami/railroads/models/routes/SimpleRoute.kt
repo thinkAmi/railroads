@@ -22,8 +22,82 @@ class SimpleRoute(
 ): BaseRoute(module, requestMethod, routePath, routeName, controllerName, actionName) {
     private val railsAction = RailsAction()
 
+    // Snapshot fields. Captured at init time and read by getXxx() so UI / renderer / filter can
+    // call those methods from the EDT without holding a read action.
+    // Default values are aligned with the "PSI not yet resolved" fallback so that any accidental
+    // observation before init completes still produces safe values.
+    private var actionTitleSnapshot: String = ""
+    private var qualifiedActionTitleSnapshot: String = ""
+    private var canNavigateSnapshot: Boolean = false
+    private var methodExistsSnapshot: Boolean = false
+    private var actionIconSnapshot: Icon = RailroadIcon.Unknown
+
     init {
-        railsAction.update(module, controllerName, actionName)
+        // Run RailsAction.update() and the snapshot computation inside the same read action so
+        // that PSI is observed at a consistent point in time. RailsAction.update() also wraps
+        // in ReadAction.run internally; nested read actions are safe in the IntelliJ Platform.
+        ReadAction.run<RuntimeException> {
+            railsAction.update(module, controllerName, actionName)
+            recomputeSnapshotInternal()
+        }
+    }
+
+    // Computation body. Reads PSI via railsAction; must be called inside a read action.
+    private fun recomputeSnapshotInternal() {
+        actionTitleSnapshot = if (controllerName.isNotBlank()) {
+            "$controllerName#$actionName"
+        } else {
+            actionName
+        }
+
+        qualifiedActionTitleSnapshot = computeQualifiedActionTitle()
+        canNavigateSnapshot = railsAction.psiMethod != null || railsAction.psiClass != null
+        methodExistsSnapshot = railsAction.psiMethod != null
+        actionIconSnapshot = computeActionIcon()
+    }
+
+    private fun computeQualifiedActionTitle(): String {
+        // (railways)
+        // Return unqualified action title in case controller is specified as
+        // parameter (ex. :controller#:action)
+        if (controllerName.contains(":")) {
+            return actionTitleSnapshot
+        }
+
+        val controllerClass = railsAction.psiClass
+        val controllerClassName = if (controllerClass != null) {
+            controllerClass.fqnWithNesting.fullPath
+        } else {
+            PsiUtil.getControllerClassNameByShortName(controllerName)
+        }
+
+        return "$controllerClassName#$actionName"
+    }
+
+    private fun computeActionIcon(): Icon {
+        return resolveActionIcon(
+            hasMethod = railsAction.psiMethod != null,
+            hasClass = railsAction.psiClass != null,
+            methodIconProvider = { railsAction.getIcon() }
+        )
+    }
+
+    companion object {
+        /**
+         * Pure dispatch helper for action icon selection. Extracted so unit tests can exercise
+         * each branch without instantiating real Ruby PSI (which is non-trivial in
+         * BasePlatformTestCase because the Ruby plugin requires several optional services).
+         */
+        @JvmStatic
+        internal fun resolveActionIcon(
+            hasMethod: Boolean,
+            hasClass: Boolean,
+            methodIconProvider: () -> Icon,
+        ): Icon {
+            if (hasMethod) return methodIconProvider()
+            if (hasClass) return RailroadIcon.NodeController
+            return RailroadIcon.Unknown
+        }
     }
 
     override fun navigate(requestFocus: Boolean) {
@@ -57,43 +131,22 @@ class SimpleRoute(
     }
 
     override fun canNavigate(): Boolean {
-        return railsAction.psiMethod != null || railsAction.psiClass != null
+        return canNavigateSnapshot
     }
 
     override fun methodExists(): Boolean {
-        return railsAction.psiMethod != null
+        return methodExistsSnapshot
     }
 
     override fun getActionTitle(): String {
-        if (controllerName.isNotBlank()) {
-            return "$controllerName#$actionName"
-        }
-        return actionName
+        return actionTitleSnapshot
     }
 
     override fun getQualifiedActionTitle(): String {
-        // (railways)
-        // Return unqualified action title in case controller is specified as
-        // parameter (ex. :controller#:action)
-        if (controllerName.contains(":")) {
-            return getActionTitle()
-        }
-
-        val controllerClass = railsAction.psiClass
-        val controllerClassName = if (controllerClass != null) controllerClass.fqnWithNesting.fullPath else PsiUtil.getControllerClassNameByShortName(controllerName)
-
-        return "$controllerClassName#$actionName"
+        return qualifiedActionTitleSnapshot
     }
 
     override fun getActionIcon(): Icon {
-        if (railsAction.psiMethod != null) {
-            return railsAction.getIcon()
-        }
-
-        if (railsAction.psiClass != null) {
-            return RailroadIcon.NodeController
-        }
-
-        return RailroadIcon.Unknown
+        return actionIconSnapshot
     }
 }

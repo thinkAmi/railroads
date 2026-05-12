@@ -41,7 +41,7 @@ The following repository secrets must be configured:
 6. The `Release` workflow runs `publishPlugin` and opens a changelog update PR.
 
 ## Standard release procedure
-1. Update `pluginVersion` in `/Users/thinkami/project/railroads/gradle.properties`.
+1. Update `version` in `/Users/thinkami/project/railroads/gradle.properties`.
 2. Update unreleased notes in `/Users/thinkami/project/railroads/CHANGELOG.md`.
 3. Merge to `main`.
 4. Confirm the `Build` workflow succeeded.
@@ -56,7 +56,7 @@ The following repository secrets must be configured:
 10. If the changelog PR shows `Code scanning is waiting for results from CodeQL`, add a minimal no-op commit on that branch from the GitHub UI and wait for checks to refresh.
 
 ### Pre-publish checklist
-- [ ] `pluginVersion` was bumped to the intended version.
+- [ ] `version` was bumped to the intended version.
 - [ ] `Build` workflow succeeded on `main`.
 - [ ] Exactly one draft exists for the target version.
 - [ ] The draft has exactly one zip asset.
@@ -73,7 +73,7 @@ The following repository secrets must be configured:
 
 ## Version change scenarios
 ### `v0.5.2 -> v0.6.0`
-When `pluginVersion` is updated from `0.5.2` to `0.6.0` and merged to `main`, non-target draft releases are removed automatically and `v0.6.0` is created as the only draft.
+When `version` is updated from `0.5.2` to `0.6.0` and merged to `main`, non-target draft releases are removed automatically and `v0.6.0` is created as the only draft.
 
 ### `v0.5.2 -> v0.5.2` (same-version rerun)
 When the same version is merged again, the workflow removes the existing target draft and recreates the `v0.5.2` draft from the latest `main` commit.
@@ -81,7 +81,7 @@ If the target tag exists and points to a different commit, the workflow attempts
 If repository rules block deleting the target tag (`HTTP 422`), `Build` intentionally fails.
 
 ### Published target already exists
-If a non-draft release already exists for the target tag, `Build` intentionally fails with a guard message. Bump `pluginVersion` and rerun via a new merge.
+If a non-draft release already exists for the target tag, `Build` intentionally fails with a guard message. Bump `version` and rerun via a new merge.
 
 ## Do / Don't rules
 Do:
@@ -116,7 +116,7 @@ Cause:
 - The target version tag is already published.
 
 Action:
-1. Bump `pluginVersion` to a new version.
+1. Bump `version` to a new version.
 2. Merge to `main` again.
 
 ### Build fails while deleting target tag with `HTTP 422`
@@ -124,7 +124,7 @@ Cause:
 - Repository rules prevent deleting the target tag ref used for same-version reruns.
 
 Action:
-1. Bump `pluginVersion` and merge again, or update repository tag rules for maintainers.
+1. Bump `version` and merge again, or update repository tag rules for maintainers.
 2. Re-run `Build` after one of the above is applied.
 
 Notes:

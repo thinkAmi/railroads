@@ -1,10 +1,9 @@
 import org.jetbrains.changelog.Changelog
-import org.jetbrains.changelog.markdownToHTML
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.intellij.platform.gradle.extensions.IntelliJPlatformDependenciesExtension
 import java.io.FileInputStream
-import java.util.*
+import java.util.Properties
 
 // load local.properties
 val localPropertiesFileExists = File(rootProject.rootDir, "local.properties").exists()
@@ -31,50 +30,32 @@ fun IntelliJPlatformDependenciesExtension.addPlugin(vararg pluginIds: String) {
 
 plugins {
     id("java") // Java support
-    alias(libs.plugins.kotlin) // Kotlin support
-    alias(libs.plugins.intelliJPlatform) // IntelliJ Platform Gradle Plugin
-    alias(libs.plugins.changelog) // Gradle Changelog Plugin
-    alias(libs.plugins.qodana) // Gradle Qodana Plugin
-    alias(libs.plugins.kover) // Gradle Kover Plugin
+    id("org.jetbrains.kotlin.jvm") // Kotlin support
+    id("org.jetbrains.intellij.platform") // IntelliJ Platform Gradle Plugin
+    id("org.jetbrains.changelog") // Gradle Changelog Plugin
 }
 
-group = providers.gradleProperty("pluginGroup").get()
-version = providers.gradleProperty("pluginVersion").get()
+group = providers.gradleProperty("group").get()
+version = providers.gradleProperty("version").get()
 
 // Set the JVM language level used to build the project.
 kotlin {
     jvmToolchain(21)
 }
 
-// Configure project's dependencies
-repositories {
-    mavenCentral()
-
-    // IntelliJ Platform Gradle Plugin Repositories Extension - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-repositories-extension.html
-    intellijPlatform {
-        defaultRepositories()
-    }
-}
-
-// Dependencies are managed with Gradle version catalog - read more: https://docs.gradle.org/current/userguide/platforms.html#sub:version-catalog
 dependencies {
-    testImplementation(libs.junit)
-    testImplementation(libs.opentest4j)
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("org.opentest4j:opentest4j:1.3.0")
 
     // IntelliJ Platform Gradle Plugin Dependencies Extension - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html
     intellijPlatform {
-        // When running test tasks, if the IDE version specified in local.properties differs from the platformVersion specified in gradle.properties,
-        // this prevents the JVM from crashing.
-        val isTestTask = gradle.startParameter.taskNames.any {
-            it.contains("test", ignoreCase = true)
+        val shouldUseLocalIde = prop != null && gradle.startParameter.taskNames.any {
+            it.contains("runIde", ignoreCase = true)
         }
+        val localIdePath = prop?.getProperty("ideDir")?.takeIf { it.isNotBlank() }
 
-        if (prop != null && !isTestTask) {
-            prop.getProperty("ideDir")?.let { ideDirValue ->
-                    if (ideDirValue.isNotEmpty()) {
-                        local(file(ideDirValue))
-                    }
-                }
+        if (shouldUseLocalIde && localIdePath != null) {
+            local(file(localIdePath))
         } else {
             // Originally, Target Platform was set to IDEA Ultimate.
             // However, starting from IDE 2025.2, verifyPlugin would fail
@@ -89,10 +70,14 @@ dependencies {
             //
             // After verifying functionality using IDEA Ultimate with the Ruby plugin,
             // no issues were found, so we will proceed with this configuration for the time being.
-            rubymine(providers.gradleProperty("platformVersion"))
+            rubymine(providers.gradleProperty("railroadsBuildTargetRubyMineVersion"))
         }
 
         addPlugin("org.jetbrains.plugins.ruby")
+        // The Ruby plugin registers JSON file type extensions during test runtime initialization.
+        // RubyMine bundles the JSON module, but the test sandbox must include it explicitly;
+        // otherwise 2025.3 tests fail with "Trying to add extensions to non-registered file type JSON".
+        testBundledModule("com.intellij.modules.json")
 
         testFramework(TestFrameworkType.Platform)
     }
@@ -108,28 +93,14 @@ dependencies {
 // Configure IntelliJ Platform Gradle Plugin - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-extension.html
 intellijPlatform {
     pluginConfiguration {
-        name = providers.gradleProperty("pluginName")
-        version = providers.gradleProperty("pluginVersion")
-
-        // Extract the <!-- Plugin description --> section from README.md and provide for the plugin's manifest
-        description = providers.fileContents(layout.projectDirectory.file("README.md")).asText.map {
-            val start = "<!-- Plugin description -->"
-            val end = "<!-- Plugin description end -->"
-
-            with(it.lines()) {
-                if (!containsAll(listOf(start, end))) {
-                    throw GradleException("Plugin description section not found in README.md:\n$start ... $end")
-                }
-                subList(indexOf(start) + 1, indexOf(end)).joinToString("\n").let(::markdownToHTML)
-            }
-        }
+        version = providers.gradleProperty("version")
 
         val changelog = project.changelog // local variable for configuration cache compatibility
         // Get the latest available change notes from the changelog file
-        changeNotes = providers.gradleProperty("pluginVersion").map { pluginVersion ->
+        changeNotes = providers.gradleProperty("version").map { releaseVersion ->
             with(changelog) {
                 renderItem(
-                    (getOrNull(pluginVersion) ?: getUnreleased())
+                    (getOrNull(releaseVersion) ?: getUnreleased())
                         .withHeader(false)
                         .withEmptySections(false),
                     Changelog.OutputType.HTML,
@@ -138,14 +109,10 @@ intellijPlatform {
         }
 
         ideaVersion {
-            sinceBuild = providers.gradleProperty("pluginSinceBuild")
+            sinceBuild = providers.gradleProperty("railroadsMinimumIdeBuild")
 
             // Note: For Railroads, since no conditions are specified, pluginUntilBuild remains undefined.
-            // If pluginUntilBuild is undefined, explicitly returning null allows the recommended() method to resolve the IDE
-            // If no value exists, the recommended() method cannot resolve the IDE
-            untilBuild = providers.gradleProperty("pluginUntilBuild").takeIf {
-                !it.orNull.isNullOrBlank()
-            } ?: provider { null }
+            untilBuild = provider { null }
         }
     }
 
@@ -157,10 +124,10 @@ intellijPlatform {
 
     publishing {
         token = providers.environmentVariable("PUBLISH_TOKEN")
-        // The pluginVersion is based on the SemVer (https://semver.org) and supports pre-release labels, like 2.1.7-alpha.3
+        // The version is based on the SemVer (https://semver.org) and supports pre-release labels, like 2.1.7-alpha.3
         // Specify pre-release label to publish the plugin in a custom Release Channel automatically. Read more:
         // https://plugins.jetbrains.com/docs/intellij/deployment.html#specifying-a-release-channel
-        channels = providers.gradleProperty("pluginVersion").map { listOf(it.substringAfter('-', "").substringBefore('.').ifEmpty { "default" }) }
+        channels = providers.gradleProperty("version").map { listOf(it.substringAfter('-', "").substringBefore('.').ifEmpty { "default" }) }
     }
 
     pluginVerification {
@@ -176,44 +143,8 @@ changelog {
     repositoryUrl = providers.gradleProperty("pluginRepositoryUrl")
 }
 
-// Configure Gradle Kover Plugin - read more: https://github.com/Kotlin/kotlinx-kover#configuration
-kover {
-    reports {
-        total {
-            xml {
-                onCheck = true
-            }
-        }
-    }
-}
-
 tasks {
-    wrapper {
-        gradleVersion = providers.gradleProperty("gradleVersion").get()
-    }
-
     publishPlugin {
         dependsOn(patchChangelog)
-    }
-}
-
-intellijPlatformTesting {
-    runIde {
-        register("runIdeForUiTests") {
-            task {
-                jvmArgumentProviders += CommandLineArgumentProvider {
-                    listOf(
-                        "-Drobot-server.port=8082",
-                        "-Dide.mac.message.dialogs.as.sheets=false",
-                        "-Djb.privacy.policy.text=<!--999.999-->",
-                        "-Djb.consents.confirmation.enabled=false",
-                    )
-                }
-            }
-
-            plugins {
-                robotServerPlugin()
-            }
-        }
     }
 }

@@ -31,7 +31,7 @@ class RailsRoutesParser(private val module: Module) {
         val result = mutableListOf<BaseRoute>()
 
         try {
-            // https://stackoverflow.com/questions/41000584/best-way-to-use-bufferedreader-in-kotlin
+            // Keep stream reading line-oriented because rails routes output can be large.
             DataInputStream(stream).bufferedReader().forEachLine {
                 val r = parseLine(it)
                 if (r.size > 0) {
