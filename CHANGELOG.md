@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-05-12
+
 - BREAKING CHANGE: Raised the minimum supported IDE version to 2025.3. IDE 2024.x, 2025.1, and 2025.2 are no longer supported.
 - Improved compatibility with IDE 2026, fixing startup errors and route-loading/copy-action failures. ([#96](https://github.com/thinkAmi/railroads/pull/96), [#99](https://github.com/thinkAmi/railroads/pull/99), [#100](https://github.com/thinkAmi/railroads/pull/100))
 - Rails Routes now shows a notification when the Ruby SDK or Rails configuration is missing or misconfigured, instead of failing silently. ([#97](https://github.com/thinkAmi/railroads/pull/97))
@@ -15,7 +17,6 @@
 - fix: change the icon to display for the route by @thinkAmi in https://github.com/thinkAmi/railroads/pull/70
 - feat: Migrate to Kotlin Coroutines and support IDE 2025.3 by @thinkAmi in https://github.com/thinkAmi/railroads/pull/72
 - fix: replace internal API usage by @thinkAmi in https://github.com/thinkAmi/railroads/pull/74
-
 
 ## [0.5.0] - 2026-02-07
 
@@ -54,12 +55,13 @@
 
 - fix `pluginUntilBuild` to `Disable`
 
-[Unreleased]: https://github.com/thinkAmi/railroads/compare/v0.5.1...HEAD
-[0.5.1]: https://github.com/thinkAmi/railroads/compare/v0.5.0...v0.5.1
-[0.5.0]: https://github.com/thinkAmi/railroads/compare/v0.4.2...v0.5.0
-[0.4.2]: https://github.com/thinkAmi/railroads/compare/v0.4.0...v0.4.2
-[0.4.0]: https://github.com/thinkAmi/railroads/compare/v0.3.0...v0.4.0
-[0.3.0]: https://github.com/thinkAmi/railroads/compare/v0.2.1...v0.3.0
-[0.2.1]: https://github.com/thinkAmi/railroads/compare/v0.1.0...v0.2.1
-[0.1.1]: https://github.com/thinkAmi/railroads/commits/v0.1.1
-[0.1.0]: https://github.com/thinkAmi/railroads/compare/v0.1.1...v0.1.0
+[Unreleased]: https://github.com/thinkAmi/railroads/compare/0.6.0...HEAD
+[0.6.0]: https://github.com/thinkAmi/railroads/compare/0.5.1...0.6.0
+[0.5.1]: https://github.com/thinkAmi/railroads/compare/0.5.0...0.5.1
+[0.5.0]: https://github.com/thinkAmi/railroads/compare/0.4.2...0.5.0
+[0.4.2]: https://github.com/thinkAmi/railroads/compare/0.4.0...0.4.2
+[0.4.0]: https://github.com/thinkAmi/railroads/compare/0.3.0...0.4.0
+[0.3.0]: https://github.com/thinkAmi/railroads/compare/0.2.1...0.3.0
+[0.2.1]: https://github.com/thinkAmi/railroads/compare/0.1.0...0.2.1
+[0.1.1]: https://github.com/thinkAmi/railroads/commits/0.1.1
+[0.1.0]: https://github.com/thinkAmi/railroads/compare/0.1.1...0.1.0
