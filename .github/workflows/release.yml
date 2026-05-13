@@ -97,8 +97,10 @@ jobs:
 
           gh pr create \
             --title "Changelog update - \`$VERSION\`" \
-            --body "Current pull request contains patched \`CHANGELOG.md\` file for the \`$VERSION\` version.
-
-**Before merging:** this PR is created by the release workflow using the default \`GITHUB_TOKEN\`, so the required \`Build\` check stays as \`Expected — Waiting for status to be reported\` and is not triggered automatically. Push an empty commit (\`git commit --allow-empty -m 'ci: trigger Build'\`) to this branch, or make a trivial edit from the GitHub UI, to start the \`Build\` workflow. See \`docs/release-process.md\` for the full procedure." \
+            --body-file - \
             --label "$LABEL" \
-            --head $BRANCH
+            --head "$BRANCH" <<EOF
+          Current pull request contains patched \`CHANGELOG.md\` file for the \`$VERSION\` version.
+
+          **Before merging:** this PR is created by the release workflow using the default \`GITHUB_TOKEN\`, so the required \`Build\` check stays as \`Expected — Waiting for status to be reported\` and is not triggered automatically. Push an empty commit (\`git commit --allow-empty -m 'ci: trigger Build'\`) to this branch, or make a trivial edit from the GitHub UI, to start the \`Build\` workflow. See \`docs/release-process.md\` for the full procedure.
+          EOF
