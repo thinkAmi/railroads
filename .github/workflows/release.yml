@@ -71,9 +71,12 @@ jobs:
       - name: Create Pull Request
         if: ${{ steps.properties.outputs.changelog != '' }}
         env:
-          # This workflow uses GITHUB_TOKEN to create the changelog PR.
-          # If CodeQL remains in "waiting for results", maintainers should add a minimal
-          # no-op commit to the PR branch from the GitHub UI to re-trigger checks.
+          # This workflow uses GITHUB_TOKEN to push and create the changelog PR.
+          # GitHub does not start new workflow runs from events triggered by GITHUB_TOKEN
+          # (except workflow_dispatch and repository_dispatch), so the required `Build`
+          # check stays as "Expected — Waiting for status to be reported" on this PR.
+          # Maintainers must push a follow-up commit to the PR branch to trigger `Build`.
+          # See docs/release-process.md for the full procedure.
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           VERSION="${{ github.event.release.tag_name }}"
@@ -86,7 +89,7 @@ jobs:
           git checkout -b $BRANCH
           git commit -am "Changelog update - $VERSION"
           git push --set-upstream origin $BRANCH
-          
+
           gh label create "$LABEL" \
             --description "Pull requests with release changelog update" \
             --force \
@@ -94,6 +97,8 @@ jobs:
 
           gh pr create \
             --title "Changelog update - \`$VERSION\`" \
-            --body "Current pull request contains patched \`CHANGELOG.md\` file for the \`$VERSION\` version.\n\nIf CodeQL remains in waiting status, add a minimal no-op commit (for example from the GitHub UI) to this branch and wait for checks to refresh." \
+            --body "Current pull request contains patched \`CHANGELOG.md\` file for the \`$VERSION\` version.
+
+**Before merging:** this PR is created by the release workflow using the default \`GITHUB_TOKEN\`, so the required \`Build\` check stays as \`Expected — Waiting for status to be reported\` and is not triggered automatically. Push an empty commit (\`git commit --allow-empty -m 'ci: trigger Build'\`) to this branch, or make a trivial edit from the GitHub UI, to start the \`Build\` workflow. See \`docs/release-process.md\` for the full procedure." \
             --label "$LABEL" \
             --head $BRANCH

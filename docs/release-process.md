@@ -53,7 +53,7 @@ The following repository secrets must be configured:
 7. Confirm the `Release` workflow succeeded.
 8. Confirm the version is published in JetBrains Marketplace.
 9. Review and merge the changelog update PR created by the workflow.
-10. If the changelog PR shows `Code scanning is waiting for results from CodeQL`, add a minimal no-op commit on that branch from the GitHub UI and wait for checks to refresh.
+10. The required `Build` check on the changelog PR will stay as `Expected — Waiting for status to be reported` because the PR was pushed by the release workflow using the default `GITHUB_TOKEN`. Push a follow-up commit to the PR branch (see "Changelog PR is blocked by `Build` required check" under Troubleshooting) to trigger `Build`, then wait for checks to refresh.
 
 ### Pre-publish checklist
 - [ ] `version` was bumped to the intended version.
@@ -68,7 +68,8 @@ The following repository secrets must be configured:
 - [ ] `publishPlugin` step succeeded.
 - [ ] The new version is visible in JetBrains Marketplace.
 - [ ] Changelog PR was created (when release body is non-empty).
-- [ ] Changelog PR checks are green (or refreshed after a minimal no-op commit when CodeQL was waiting).
+- [ ] A follow-up commit was pushed to the changelog PR branch to trigger the required `Build` check.
+- [ ] Changelog PR checks are green.
 - [ ] Changelog PR is reviewed and merged.
 
 ## Version change scenarios
@@ -147,15 +148,34 @@ The workflow does not print:
 - Full environment variable dumps
 - Raw API response payloads or stderr bodies
 
-### Changelog PR is blocked with `Code scanning is waiting for results from CodeQL`
-Cause:
-- The changelog PR was created by `release.yml` using `GITHUB_TOKEN`, and checks may not attach to the PR commit immediately.
+### Changelog PR is blocked by `Build` required check
+Symptom:
+- The required `Build` check on the changelog PR stays as `Expected — Waiting for status to be reported`, and the PR cannot be merged.
 
-Action:
+Cause:
+- The changelog PR is created by `release.yml` using the default `GITHUB_TOKEN`. GitHub does not start new workflow runs from events triggered by `GITHUB_TOKEN` (only `workflow_dispatch` and `repository_dispatch` are exceptions), so the `Build` workflow's `pull_request` trigger never fires for the bot-pushed head commit.
+- CodeQL still runs because the default code scanning setup uses a separate `dynamic` event that is not subject to this restriction.
+
+Action (choose one; both push a new commit authored by the maintainer so `pull_request.synchronize` fires):
+
+Option A — push an empty commit locally:
+
+```bash
+git fetch origin
+git checkout changelog-update-vX.Y.Z
+git pull --ff-only
+git status --short          # confirm clean before --allow-empty
+git commit --allow-empty -m "ci: trigger Build workflow"
+git push
+```
+
+Option B — make a trivial edit from the GitHub UI:
+
 1. Open the changelog PR in GitHub.
-2. Edit `CHANGELOG.md` in the GitHub UI and make a minimal no-op text change.
-3. Commit directly to the changelog PR branch (for example, `changelog-update-vX.Y.Z`).
-4. Wait for checks to refresh, then merge the PR when all required checks are green.
+2. Edit `CHANGELOG.md` (or any file) and make a trivial change (for example, adjusting a trailing newline).
+3. Commit directly to the changelog PR branch (`changelog-update-vX.Y.Z`).
+
+After pushing the follow-up commit, the `Build` workflow run should start within a couple of minutes. Wait for all required checks to go green, then merge the PR.
 
 ## Recovery procedures
 ### Safe cleanup when duplicate draft and published release exist for the same version
