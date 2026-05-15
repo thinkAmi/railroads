@@ -57,26 +57,21 @@ dependencies {
         if (shouldUseLocalIde && localIdePath != null) {
             local(file(localIdePath))
         } else {
-            // Originally, Target Platform was set to IDEA Ultimate.
-            // However, starting from IDE 2025.2, verifyPlugin would fail
-            // unless org.jetbrains.plugins.ruby was specified in the plugin.xml's depends section.
-            // While org.jetbrains.plugins.ruby is the name of the Ruby plugin,
-            // the official documentation doesn't explicitly state that it should be included in the depends list.
+            // verifyPlugin can fail unless org.jetbrains.plugins.ruby is declared in plugin.xml's depends section.
+            // While org.jetbrains.plugins.ruby is the Ruby plugin ID, the official RubyMine documentation does not
+            // explicitly state that it should be included in the depends list.
             // https://plugins.jetbrains.com/docs/intellij/rubymine.html
             //
-            // Some open-source plugins using the Ruby plugin include this specification,
-            // but there was no clear evidence indicating whether this was truly appropriate.
-            // Therefore, we reverted to using com.intellij.modules.ruby for depends while changing the Target Platform to RubyMine instead.
-            //
-            // After verifying functionality using IDEA Ultimate with the Ruby plugin,
-            // no issues were found, so we will proceed with this configuration for the time being.
+            // Therefore, Railroads keeps com.intellij.modules.ruby as the module dependency and uses RubyMine as
+            // the target platform for build and verification. IDEA Ultimate with the Ruby plugin is still covered
+            // by addPlugin("org.jetbrains.plugins.ruby").
             rubymine(providers.gradleProperty("railroadsBuildTargetRubyMineVersion"))
         }
 
         addPlugin("org.jetbrains.plugins.ruby")
         // The Ruby plugin registers JSON file type extensions during test runtime initialization.
         // RubyMine bundles the JSON module, but the test sandbox must include it explicitly;
-        // otherwise 2025.3 tests fail with "Trying to add extensions to non-registered file type JSON".
+        // otherwise test runtime initialization can fail when JSON file type extensions are registered.
         testBundledModule("com.intellij.modules.json")
 
         testFramework(TestFrameworkType.Platform)
