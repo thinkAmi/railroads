@@ -6,36 +6,47 @@ class RoutesPreflightTest : TestCase() {
     fun testNoModule() {
         TestCase.assertEquals(
             RoutesPreflightResultKind.NoModule,
-            decideRoutesPreflight(hasModule = false, hasRailsRoot = false, hasSdk = false)
+            decideRoutesPreflight(moduleCount = 0, railsApplicationCount = 0, hasSdk = false)
         )
         TestCase.assertEquals(
             RoutesPreflightResultKind.NoModule,
-            decideRoutesPreflight(hasModule = false, hasRailsRoot = true, hasSdk = true)
+            decideRoutesPreflight(moduleCount = 0, railsApplicationCount = 1, hasSdk = true)
         )
     }
 
     fun testNotRailsApplication() {
         TestCase.assertEquals(
             RoutesPreflightResultKind.NotRailsApplication,
-            decideRoutesPreflight(hasModule = true, hasRailsRoot = false, hasSdk = false)
+            decideRoutesPreflight(moduleCount = 1, railsApplicationCount = 0, hasSdk = false)
         )
         TestCase.assertEquals(
             RoutesPreflightResultKind.NotRailsApplication,
-            decideRoutesPreflight(hasModule = true, hasRailsRoot = false, hasSdk = true)
+            decideRoutesPreflight(moduleCount = 3, railsApplicationCount = 0, hasSdk = true)
+        )
+    }
+
+    fun testMultipleRailsApplications() {
+        TestCase.assertEquals(
+            RoutesPreflightResultKind.MultipleRailsApplications,
+            decideRoutesPreflight(moduleCount = 2, railsApplicationCount = 2, hasSdk = true)
+        )
+        TestCase.assertEquals(
+            RoutesPreflightResultKind.MultipleRailsApplications,
+            decideRoutesPreflight(moduleCount = 3, railsApplicationCount = 2, hasSdk = false)
         )
     }
 
     fun testMissingRubySdk() {
         TestCase.assertEquals(
             RoutesPreflightResultKind.MissingRubySdk,
-            decideRoutesPreflight(hasModule = true, hasRailsRoot = true, hasSdk = false)
+            decideRoutesPreflight(moduleCount = 2, railsApplicationCount = 1, hasSdk = false)
         )
     }
 
     fun testReady() {
         TestCase.assertEquals(
             RoutesPreflightResultKind.Ready,
-            decideRoutesPreflight(hasModule = true, hasRailsRoot = true, hasSdk = true)
+            decideRoutesPreflight(moduleCount = 2, railsApplicationCount = 1, hasSdk = true)
         )
     }
 }

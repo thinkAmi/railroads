@@ -46,7 +46,15 @@ fun launchRoutes(project: Project) {
                 notifyConfigurationIssueOnEdt(
                     project, mainView,
                     "Railroads: Not a Rails project",
-                    "No Rails application was found in the current module."
+                    "No Rails application was found. Mark the Rails app directory as Ruby Module Root in RubyMine."
+                )
+                return@launch
+            }
+            RoutesPreflightResult.MultipleRailsApplications -> {
+                notifyConfigurationIssueOnEdt(
+                    project, mainView,
+                    "Railroads: Multiple Rails applications found",
+                    "Railroads supports a single Rails application per project. Open one Rails app or keep only one Ruby Module Root enabled."
                 )
                 return@launch
             }
@@ -62,7 +70,7 @@ fun launchRoutes(project: Project) {
         }
 
         val module = ready.module
-        val moduleContentRoot = ready.moduleContentRoot
+        val railsApplicationRoot = ready.railsApplicationRoot
         val sdk = ready.sdk
 
         val output: ProcessOutput = try {
@@ -71,7 +79,7 @@ fun launchRoutes(project: Project) {
                 ProgressManager.getInstance().executeNonCancelableSection(Runnable {
                     result = RubyGemExecutionContext.create(sdk, "rails")
                         .withModule(module)
-                        .withWorkingDirPath(moduleContentRoot)
+                        .withWorkingDirPath(railsApplicationRoot)
                         .withExecutionMode(ExecutionModes.SameThreadMode())
                         .withArguments("routes", "--trace")
                         .executeScript() ?: ProcessOutput()

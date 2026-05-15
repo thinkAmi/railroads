@@ -4,6 +4,9 @@
 
 ## [Unreleased]
 
+- BREAKING CHANGE: Raised the minimum supported IDE version to 2026.1. IDE 2025.3 is no longer supported.
+- Added experimental support for Rails applications located in project subdirectories when the IDE recognizes them as Ruby Module Roots.
+
 ## [0.6.0] - 2026-05-12
 
 - BREAKING CHANGE: Raised the minimum supported IDE version to 2025.3. IDE 2024.x, 2025.1, and 2025.2 are no longer supported.

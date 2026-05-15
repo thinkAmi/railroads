@@ -18,9 +18,8 @@ There was a great plugin called [Railways](https://plugins.jetbrains.com/plugin/
 
 ## Unsupported Features
 
-- IDE versions earlier than `2023.2.*` .
-  - if you want to use that version, please use the Railways plugin.
-  - for ease of feature comparison with Railways, 2023.2.* is supported at this time. However, if Railroads finds it difficult to support 2023.2.* in the future, it may no longer do so.
+- IDE versions outside the compatibility range for the installed Railroads version
+  - See [Compatibility](#compatibility) for supported IDE versions by Railroads version.
 - Old format output from rails routes
   - for example, the format of the following test data from Railways
     - https://github.com/basgren/railways/blob/master/test/data/parserTest_1.txt
@@ -32,8 +31,10 @@ There was a great plugin called [Railways](https://plugins.jetbrains.com/plugin/
   - Supports IDE versions from 2023.3.* up to 2024.*
 - Railroads version 0.3.* through 0.5.1
   - Supports IDE versions 2024.2.* and later
-- Railroads version 0.6.0 and later
+- Railroads version 0.6.*
   - Supports IDE versions 2025.3.* and later
+- Railroads version 0.7.0 and later
+  - Supports IDE versions 2026.1.* and later
 
 ## TODOs
 
