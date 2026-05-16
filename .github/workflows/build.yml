@@ -203,8 +203,44 @@ jobs:
       - name: Fetch Sources
         uses: actions/checkout@v4
 
+      # Decide whether this push should create or recreate the target release draft.
+      - name: Check target release state
+        id: target_release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TARGET_TAG="v${{ needs.build.outputs.version }}"
+
+          TARGET_RELEASE_ERROR="$(mktemp)"
+          if TARGET_RELEASE="$(gh api "repos/{owner}/{repo}/releases/tags/$TARGET_TAG" --jq '[.id, .draft] | @tsv' 2>"$TARGET_RELEASE_ERROR")"; then
+            IFS=$'\t' read -r _ TARGET_RELEASE_IS_DRAFT <<< "$TARGET_RELEASE"
+            if [ "$TARGET_RELEASE_IS_DRAFT" = "true" ]; then
+              rm -f "$TARGET_RELEASE_ERROR"
+              echo "Release $TARGET_TAG already exists as a draft. Recreating draft."
+              echo "should_create_draft=true" >> "$GITHUB_OUTPUT"
+              echo "target_release_state=draft" >> "$GITHUB_OUTPUT"
+            else
+              rm -f "$TARGET_RELEASE_ERROR"
+              echo "Release $TARGET_TAG already exists and is not a draft. Skipping release draft creation."
+              echo "should_create_draft=false" >> "$GITHUB_OUTPUT"
+              echo "target_release_state=published" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            if grep -q "HTTP 404" "$TARGET_RELEASE_ERROR"; then
+              rm -f "$TARGET_RELEASE_ERROR"
+              echo "Release $TARGET_TAG does not exist. Creating draft."
+              echo "should_create_draft=true" >> "$GITHUB_OUTPUT"
+              echo "target_release_state=missing" >> "$GITHUB_OUTPUT"
+            else
+              rm -f "$TARGET_RELEASE_ERROR"
+              echo "Failed to inspect target release."
+              exit 1
+            fi
+          fi
+
       # Delete all draft releases and related tags (best-effort cleanup).
       - name: Delete all draft releases/tags (best-effort)
+        if: steps.target_release.outputs.should_create_draft == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -221,32 +257,9 @@ jobs:
             gh api -X DELETE "repos/{owner}/{repo}/git/refs/tags/$TAG_NAME" >/dev/null 2>&1 || true
           done <<< "$DRAFT_RELEASES"
 
-      # Guard: fail when the target version already has a published release.
-      - name: "Guard: published target release must fail"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          TARGET_TAG="v${{ needs.build.outputs.version }}"
-
-          TARGET_RELEASE_ERROR="$(mktemp)"
-          if TARGET_RELEASE="$(gh api "repos/{owner}/{repo}/releases/tags/$TARGET_TAG" --jq '[.id, .draft] | @tsv' 2>"$TARGET_RELEASE_ERROR")"; then
-            IFS=$'\t' read -r _ TARGET_RELEASE_IS_DRAFT <<< "$TARGET_RELEASE"
-            if [ "$TARGET_RELEASE_IS_DRAFT" != "true" ]; then
-              rm -f "$TARGET_RELEASE_ERROR"
-              echo "Release $TARGET_TAG already exists and is not a draft. Update version before merging."
-              exit 1
-            fi
-          else
-            if ! grep -q "HTTP 404" "$TARGET_RELEASE_ERROR"; then
-              rm -f "$TARGET_RELEASE_ERROR"
-              echo "Failed to inspect target release."
-              exit 1
-            fi
-          fi
-          rm -f "$TARGET_RELEASE_ERROR"
-
       # Guard: target tag must match the workflow commit SHA.
       - name: "Guard: target tag must match current workflow SHA"
+        if: steps.target_release.outputs.should_create_draft == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -283,6 +296,7 @@ jobs:
 
       # Download plugin zip prepared in the build job.
       - name: Download Release Package
+        if: steps.target_release.outputs.should_create_draft == 'true'
         uses: actions/download-artifact@v4
         with:
           name: release-package
@@ -290,6 +304,7 @@ jobs:
 
       # Create a new release draft which is not publicly visible and requires manual acceptance
       - name: Create Release Draft
+        if: steps.target_release.outputs.should_create_draft == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
