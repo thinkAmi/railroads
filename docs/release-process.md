@@ -31,14 +31,15 @@ The following repository secrets must be configured:
 
 ## Release workflow overview
 1. A merge to `main` triggers the `Build` workflow.
-2. `releaseDraft` runs three preparation guards before draft creation:
+2. `releaseDraft` checks whether the target release already exists.
+3. If the target release is already published, `releaseDraft` skips draft creation and succeeds.
+4. If the target release is missing or still draft-only, `releaseDraft` runs the draft preparation steps:
 - Delete all draft releases/tags (best-effort)
-- Guard: published target release must fail
 - Guard: target tag must match current workflow SHA
-3. After those guards pass, `releaseDraft` creates a new draft release with a zip asset already attached.
-4. A maintainer reviews and publishes that draft from the Releases page.
-5. Publishing the draft triggers the `Release` workflow.
-6. The `Release` workflow runs `publishPlugin` and opens a changelog update PR.
+5. After those preparation steps pass, `releaseDraft` creates a new draft release with a zip asset already attached.
+6. A maintainer reviews and publishes that draft from the Releases page.
+7. Publishing the draft triggers the `Release` workflow.
+8. The `Release` workflow runs `publishPlugin` and opens a changelog update PR.
 
 ## Standard release procedure
 1. Update `version` in `/Users/thinkami/project/railroads/gradle.properties`.
@@ -82,7 +83,8 @@ If the target tag exists and points to a different commit, the workflow attempts
 If repository rules block deleting the target tag (`HTTP 422`), `Build` intentionally fails.
 
 ### Published target already exists
-If a non-draft release already exists for the target tag, `Build` intentionally fails with a guard message. Bump `version` and rerun via a new merge.
+If a non-draft release already exists for the target tag, `Build` skips release draft creation and succeeds.
+This is expected for post-release maintenance merges, such as the changelog update PR created by the `Release` workflow.
 
 ## Do / Don't rules
 Do:
@@ -112,13 +114,13 @@ gh api --paginate repos/thinkAmi/railroads/releases --jq '.[] | {id, draft, name
 gh run list --repo thinkAmi/railroads --workflow build.yml --limit 20
 ```
 
-### Build fails with "already exists and is not a draft"
+### Build skips release draft creation with "already exists and is not a draft"
 Cause:
 - The target version tag is already published.
 
 Action:
-1. Bump `version` to a new version.
-2. Merge to `main` again.
+1. If this is a post-release maintenance merge, no action is required.
+2. If you expected a new release draft, bump `version` to a new version and merge to `main` again.
 
 ### Build fails while deleting target tag with `HTTP 422`
 Cause:
