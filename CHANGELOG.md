@@ -4,8 +4,10 @@
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-05-16
+
 - BREAKING CHANGE: Raised the minimum supported IDE version to 2026.1. IDE 2025.3 is no longer supported.
-- Added experimental support for Rails applications located in project subdirectories when the IDE recognizes them as Ruby Module Roots.
+- Added experimental support for Rails applications located in project subdirectories when the IDE recognizes them as Ruby Module Roots. (#105)
 
 ## [0.6.0] - 2026-05-12
 
@@ -58,7 +60,8 @@
 
 - fix `pluginUntilBuild` to `Disable`
 
-[Unreleased]: https://github.com/thinkAmi/railroads/compare/0.6.0...HEAD
+[Unreleased]: https://github.com/thinkAmi/railroads/compare/0.7.0...HEAD
+[0.7.0]: https://github.com/thinkAmi/railroads/compare/0.6.0...0.7.0
 [0.6.0]: https://github.com/thinkAmi/railroads/compare/0.5.1...0.6.0
 [0.5.1]: https://github.com/thinkAmi/railroads/compare/0.5.0...0.5.1
 [0.5.0]: https://github.com/thinkAmi/railroads/compare/0.4.2...0.5.0
