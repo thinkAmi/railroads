@@ -1,0 +1,5 @@
+[tools]
+"aqua:suzuki-shunsuke/pinact" = "3.10.1"
+
+[settings]
+minimum_release_age = "7d"
