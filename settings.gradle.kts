@@ -7,7 +7,7 @@ pluginManagement {
     }
 
     plugins {
-        id("org.gradle.toolchains.foojay-resolver-convention") version "0.8.0"
+        id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
         id("org.jetbrains.changelog") version "2.5.0"
         id("org.jetbrains.intellij.platform") version "2.16.0"
         id("org.jetbrains.intellij.platform.settings") version "2.16.0"
