@@ -20,7 +20,7 @@ There was a great plugin called [Railways](https://plugins.jetbrains.com/plugin/
 ## Unsupported Features
 
 - IDE versions outside the compatibility range for the installed Railroads version
-  - See [Compatibility](#compatibility) for supported IDE versions by Railroads version.
+  - See [Compatibility](#compatibility) for the supported IDE versions.
 - Old format output from rails routes
   - for example, the format of the following test data from Railways
     - https://github.com/basgren/railways/blob/master/test/data/parserTest_1.txt
@@ -28,14 +28,10 @@ There was a great plugin called [Railways](https://plugins.jetbrains.com/plugin/
 
 ## Compatibility
 
-- Railroads version 0.2.* and earlier
-  - Supports IDE versions from 2023.3.* up to 2024.*
-- Railroads version 0.3.* through 0.5.1
-  - Supports IDE versions 2024.2.* and later
-- Railroads version 0.6.*
-  - Supports IDE versions 2025.3.* and later
-- Railroads version 0.7.0 and later
-  - Supports IDE versions 2026.1.* and later
+- Each Railroads release supports the IDE version it was built for and newer.
+- A minor release may raise that minimum. Older IDEs keep working with the last Railroads version that supports them, and the IDE offers that version automatically.
+- For the exact IDE range of each release, see the [Versions tab on JetBrains Marketplace](https://plugins.jetbrains.com/plugin/24076-railroads/versions).
+- The current minimum is `railroadsMinimumIdeBuild` in `gradle.properties`.
 
 ## TODOs
 

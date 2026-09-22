@@ -2,6 +2,7 @@ import org.jetbrains.changelog.Changelog
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.intellij.platform.gradle.extensions.IntelliJPlatformDependenciesExtension
+import org.jetbrains.intellij.platform.gradle.models.ProductRelease
 import java.io.FileInputStream
 import java.util.Properties
 
@@ -127,7 +128,10 @@ intellijPlatform {
 
     pluginVerification {
         ides {
-            recommended()
+            // Verify against the latest released IDE only, excluding EAP builds
+            latest {
+                channels = listOf(ProductRelease.Channel.RELEASE)
+            }
         }
     }
 }
