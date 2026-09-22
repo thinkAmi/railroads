@@ -1,15 +1,20 @@
 package com.github.thinkami.railroads.ui
 
 import com.github.thinkami.railroads.actions.RailsRouteAction
+import com.github.thinkami.railroads.models.MethodFilterItem
 import com.github.thinkami.railroads.models.RoutesTableModel
+import com.github.thinkami.railroads.models.buildMethodFilterItems
 import com.github.thinkami.railroads.models.routes.BaseRoute
 import com.github.thinkami.railroads.ui.table.ActionCellRenderer
 import com.github.thinkami.railroads.ui.table.RoutesTable
+import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.ui.HyperlinkLabel
 import com.intellij.ui.SearchTextField
 import com.intellij.ui.dsl.builder.*
 import com.intellij.ui.table.JBTable
+import java.awt.event.ItemEvent
+import javax.swing.DefaultComboBoxModel
 import javax.swing.JLabel
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
@@ -22,6 +27,7 @@ class MainContent {
     private lateinit var methodName: Cell<JLabel>
     private lateinit var actionName: Cell<HyperlinkLabel>
     private lateinit var routeName: Cell<JLabel>
+    private lateinit var methodFilter: Cell<ComboBox<MethodFilterItem>>
     private lateinit var pathFilter: Cell<SearchTextField>
     private lateinit var routesCounter: Cell<JLabel>
     private lateinit var runRailsRoutesMessage: Cell<JLabel>
@@ -36,6 +42,14 @@ class MainContent {
         content = panel {
             row {
                 button("Rails Routes", RailsRouteAction())
+
+                methodFilter = comboBox(listOf(MethodFilterItem.ALL))
+                methodFilter.component.name = "methodFilter"
+                methodFilter.component.addItemListener {
+                    if (it.stateChange == ItemEvent.SELECTED) {
+                        handleMethodFilterChange()
+                    }
+                }
 
                 pathFilter = cell(SearchTextField())
                 pathFilter.component.addDocumentListener(object : DocumentListener {
@@ -131,10 +145,29 @@ class MainContent {
                 configurationIssueMessage.component.name = "configurationIssueMessage"
             }.topGap(TopGap.MEDIUM).bottomGap(BottomGap.MEDIUM).resizableRow().visible(false)
         }
+
+        routesTableModel.onRoutesUpdated = {
+            rebuildMethodFilterItems()
+        }
     }
 
     private fun handleFilterChange() {
         routesTableModel.tableFilter.filterText = pathFilter.component.text
+    }
+
+    private fun handleMethodFilterChange() {
+        val item = methodFilter.component.selectedItem as? MethodFilterItem ?: return
+        routesTableModel.tableFilter.requestMethod = item.requestMethod
+    }
+
+    private fun rebuildMethodFilterItems() {
+        val selected = methodFilter.component.selectedItem as? MethodFilterItem ?: MethodFilterItem.ALL
+        val items = buildMethodFilterItems(routesTableModel.getRequestMethods(), selected)
+
+        // Replacing the model keeps the selection without firing item events
+        val model = DefaultComboBoxModel(items.toTypedArray())
+        model.selectedItem = selected
+        methodFilter.component.model = model
     }
 
     private fun showRoute(route: BaseRoute?) {

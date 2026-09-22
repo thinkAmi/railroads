@@ -9,6 +9,9 @@ class RoutesTableModel: AbstractTableModel() {
     private val columns: List<String> = listOf("Method", "Path", "Action", "Name")
     val tableFilter: RoutesTableFilter = RoutesTableFilter(this)
 
+    // Called only when the routes are replaced, not when the filter changes
+    var onRoutesUpdated: () -> Unit = {}
+
     init {
         resourceChanged()
     }
@@ -42,6 +45,7 @@ class RoutesTableModel: AbstractTableModel() {
         this.allRoutes = routes
 
         resourceChanged()
+        onRoutesUpdated()
     }
 
     fun resourceChanged() {
@@ -58,5 +62,9 @@ class RoutesTableModel: AbstractTableModel() {
 
     fun getTotalRoutesCount(): Int {
         return allRoutes.size
+    }
+
+    fun getRequestMethods(): List<String> {
+        return allRoutes.map { it.requestMethod }.distinct()
     }
 }

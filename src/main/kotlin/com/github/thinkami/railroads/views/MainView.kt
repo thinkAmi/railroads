@@ -10,6 +10,7 @@ import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBViewport
 import com.intellij.ui.table.JBTable
 import javax.swing.JButton
+import javax.swing.JComboBox
 import javax.swing.JLabel
 
 class MainView(toolWindow: ToolWindow) {
@@ -144,6 +145,10 @@ class MainView(toolWindow: ToolWindow) {
 
     private fun switchHeaderMenu(isEnabled: Boolean) {
         panelComponent.components.filterIsInstance<JButton>().map {
+            it.isEnabled = isEnabled
+        }
+
+        panelComponent.components.filterIsInstance<JComboBox<*>>().map {
             it.isEnabled = isEnabled
         }
     }
