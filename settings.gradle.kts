@@ -11,7 +11,7 @@ pluginManagement {
         id("org.jetbrains.changelog") version "2.5.0"
         id("org.jetbrains.intellij.platform") version "2.16.0"
         id("org.jetbrains.intellij.platform.settings") version "2.16.0"
-        id("org.jetbrains.kotlin.jvm") version "2.3.21"
+        id("org.jetbrains.kotlin.jvm") version "2.4.0"
     }
 }
 
