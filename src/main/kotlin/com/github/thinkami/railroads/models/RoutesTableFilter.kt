@@ -17,6 +17,16 @@ class RoutesTableFilter(val model: RoutesTableModel) {
             }
         }
 
+    // null matches all routes, and an empty string matches routes without a verb
+    var requestMethod: String? = null
+        set(value) {
+            if (value != requestMethod) {
+                field = value
+
+                model.resourceChanged()
+            }
+        }
+
     private var filterPattern = Pattern.compile("")
 
     private fun buildFilterPattern(filterText: String): Pattern {
@@ -25,8 +35,11 @@ class RoutesTableFilter(val model: RoutesTableModel) {
         return Pattern.compile(regex, Pattern.CASE_INSENSITIVE)
     }
     fun match(route: BaseRoute): Boolean {
-        return filterPattern.matcher(route.routePath).find() ||
+        val isRequestMethodMatched = requestMethod == null || route.requestMethod == requestMethod
+
+        return isRequestMethodMatched && (
+                filterPattern.matcher(route.routePath).find() ||
                 filterPattern.matcher(route.getActionTitle()).find() ||
-                filterPattern.matcher(route.routeName).find()
+                filterPattern.matcher(route.routeName).find())
     }
 }

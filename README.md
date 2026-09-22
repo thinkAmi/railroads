@@ -15,6 +15,7 @@ There was a great plugin called [Railways](https://plugins.jetbrains.com/plugin/
 - Displays routes of Ruby on Rails application/engine in a separate "Railroads" panel
 - The listed path and name can be copied from the context menu
 - Provides quick routes filtering by route path, controller/action or route name
+- Provides routes filtering by HTTP method, which can be combined with the text filter
 
 ## Unsupported Features
 
