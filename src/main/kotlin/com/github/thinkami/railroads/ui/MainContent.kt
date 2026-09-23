@@ -7,6 +7,7 @@ import com.github.thinkami.railroads.models.buildMethodFilterItems
 import com.github.thinkami.railroads.models.routes.BaseRoute
 import com.github.thinkami.railroads.ui.table.ActionCellRenderer
 import com.github.thinkami.railroads.ui.table.RoutesTable
+import com.github.thinkami.railroads.ui.table.RoutesTableRowSorter
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.ui.HyperlinkLabel
@@ -75,6 +76,7 @@ class MainContent {
             row {
                 table = RoutesTable()
                 table.model = routesTableModel
+                table.rowSorter = RoutesTableRowSorter(routesTableModel)
                 table.autoResizeMode = JBTable.AUTO_RESIZE_ALL_COLUMNS
                 table.fillsViewportHeight = true
 
@@ -84,9 +86,10 @@ class MainContent {
                 // Event: Reflect the selected row to each label
                 table.selectionModel.addListSelectionListener {
                     if (!it.valueIsAdjusting) {
-                        val originalRowIndex = table.convertRowIndexToModel(table.selectedRow)
+                        // convertRowIndexToModel throws for -1 (no selection) when a row sorter is set
+                        val selectedRow = table.selectedRow
                         val model = table.model as RoutesTableModel
-                        val route = if (originalRowIndex >= 0) model.getRoute(originalRowIndex) else null
+                        val route = if (selectedRow >= 0) model.getRoute(table.convertRowIndexToModel(selectedRow)) else null
 
                         showRoute(route)
                     }

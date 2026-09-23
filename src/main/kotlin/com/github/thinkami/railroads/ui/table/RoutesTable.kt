@@ -72,13 +72,14 @@ class RoutesTable: JBTable(), DataProvider {
     }
 
     private fun getSelectedRoute(): BaseRoute? {
-        val selectedId = convertRowIndexToModel(selectedRow)
-        if (selectedId < 0) {
+        // convertRowIndexToModel throws for -1 (no selection) when a row sorter is set
+        val selectedViewRow = selectedRow
+        if (selectedViewRow < 0) {
             return null
         }
 
         val m = model as RoutesTableModel
-        return m.getRoute(selectedId)
+        return m.getRoute(convertRowIndexToModel(selectedViewRow))
     }
 
     private fun getSelectedRoutes(): Array<BaseRoute> {
