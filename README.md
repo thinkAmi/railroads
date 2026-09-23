@@ -16,6 +16,7 @@ There was a great plugin called [Railways](https://plugins.jetbrains.com/plugin/
 - The listed path and name can be copied from the context menu
 - Provides quick routes filtering by route path, controller/action or route name
 - Provides routes filtering by HTTP method, which can be combined with the text filter
+- Provides routes sorting by clicking a column header, which cycles through ascending, descending and the original order of rails routes
 
 ## Unsupported Features
 

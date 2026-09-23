@@ -3,6 +3,9 @@ package com.github.thinkami.railroads.ui
 import com.github.thinkami.railroads.models.RoutesTableModel
 import com.github.thinkami.railroads.models.routes.BaseRoute
 import com.github.thinkami.railroads.parser.RailsRoutesParser
+import com.github.thinkami.railroads.ui.table.RoutesTable
+import com.github.thinkami.railroads.ui.table.RoutesTableRowSorter
+import com.intellij.openapi.actionSystem.PlatformDataKeys
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.ui.SearchTextField
 import com.intellij.ui.components.JBScrollPane
@@ -13,6 +16,8 @@ import java.io.File
 import java.io.FileInputStream
 import javax.swing.JComboBox
 import javax.swing.JLabel
+import javax.swing.RowSorter
+import javax.swing.SortOrder
 
 // Component tests that operate the Swing components of MainContent directly.
 // Components are looked up by type and name, not by their position in the layout.
@@ -89,6 +94,96 @@ class MainContentTest: BasePlatformTestCase() {
         TestCase.assertEquals(listOf("All", "GET", "POST", "PUT", "PATCH", "DELETE", "(blank)"), methodFilterLabels())
     }
 
+    fun testTableUsesRoutesTableRowSorter() {
+        TestCase.assertTrue(table().rowSorter is RoutesTableRowSorter)
+    }
+
+    fun testSelectedRouteFollowsSortedRow() {
+        loadRoutes(routes)
+        // Path: descending
+        toggleSortOrder(1)
+        toggleSortOrder(1)
+
+        table().setRowSelectionInterval(0, 0)
+
+        // Used by the double-click navigation and to enable the copy actions
+        val route = selectedItem() as BaseRoute
+        TestCase.assertEquals("/videos/unknown(.:format)", route.routePath)
+
+        // Shown below the table
+        TestCase.assertTrue(labelTexts().contains("/videos/unknown(.:format)"))
+    }
+
+    fun testSelectedRoutesFollowSortedRows() {
+        loadRoutes(routes)
+        // Method: descending
+        toggleSortOrder(0)
+        toggleSortOrder(0)
+
+        table().setRowSelectionInterval(0, 1)
+
+        // Used by the copy actions
+        TestCase.assertEquals(
+            listOf("/rack_app(.:format)", "/blogs/:blog_id/posts/:post_id/comments/:id(.:format)"),
+            selectedItems().map { (it as BaseRoute).routePath }
+        )
+    }
+
+    fun testNoSelectionWhileSorted() {
+        loadRoutes(routes)
+        toggleSortOrder(1)
+
+        TestCase.assertEquals(-1, table().selectedRow)
+        TestCase.assertNull(selectedItem())
+        TestCase.assertEquals(0, selectedItems().size)
+    }
+
+    fun testSelectionIsClearedByFilterChangeWhileSorted() {
+        loadRoutes(routes)
+        // Path: descending
+        toggleSortOrder(1)
+        toggleSortOrder(1)
+        table().setRowSelectionInterval(0, 0)
+        TestCase.assertTrue(labelTexts().contains("/videos/unknown(.:format)"))
+
+        searchTextField().text = "shops"
+
+        TestCase.assertEquals(-1, table().selectedRow)
+        TestCase.assertNull(selectedItem())
+        TestCase.assertFalse(labelTexts().contains("/videos/unknown(.:format)"))
+    }
+
+    fun testSortIsKeptAfterFilterChange() {
+        loadRoutes(routes)
+        // Path: descending
+        toggleSortOrder(1)
+        toggleSortOrder(1)
+
+        selectMethod("POST")
+
+        TestCase.assertEquals(17, table().rowCount)
+        TestCase.assertEquals("/shops(.:format)", viewRoute(0).routePath)
+        TestCase.assertEquals("/blogs(.:format)", viewRoute(16).routePath)
+
+        searchTextField().text = "blogs"
+
+        TestCase.assertEquals(3, table().rowCount)
+        TestCase.assertEquals("/blogs/:blog_id/posts/:post_id/comments(.:format)", viewRoute(0).routePath)
+        TestCase.assertEquals("/blogs(.:format)", viewRoute(2).routePath)
+    }
+
+    fun testSortIsKeptAfterReloadingRoutes() {
+        loadRoutes(routes)
+        // Method: ascending
+        toggleSortOrder(0)
+
+        loadRoutes(routes.filter { it.requestMethod != "GET" })
+
+        TestCase.assertEquals(listOf(RowSorter.SortKey(0, SortOrder.ASCENDING)), table().rowSorter.sortKeys)
+        TestCase.assertEquals("POST", viewRoute(0).requestMethod)
+        TestCase.assertEquals("", viewRoute(table().rowCount - 1).requestMethod)
+    }
+
     private fun methodFilter(): JComboBox<*> {
         return mainContent.content.components.filterIsInstance<JComboBox<*>>().first {
             it.name == "methodFilter"
@@ -127,5 +222,26 @@ class MainContentTest: BasePlatformTestCase() {
 
     private fun loadRoutes(routes: List<BaseRoute>) {
         (table().model as RoutesTableModel).updateTableDataFromRoutes(routes)
+    }
+
+    // Clicking a column header calls toggleSortOrder of the row sorter
+    private fun toggleSortOrder(column: Int) {
+        table().rowSorter.toggleSortOrder(column)
+    }
+
+    private fun viewRoute(viewRow: Int): BaseRoute {
+        return (table().model as RoutesTableModel).getRoute(table().convertRowIndexToModel(viewRow))
+    }
+
+    private fun selectedItem(): Any? {
+        return (table() as RoutesTable).getData(PlatformDataKeys.SELECTED_ITEM.name)
+    }
+
+    private fun selectedItems(): Array<*> {
+        return (table() as RoutesTable).getData(PlatformDataKeys.SELECTED_ITEMS.name) as Array<*>
+    }
+
+    private fun labelTexts(): List<String> {
+        return mainContent.content.components.filterIsInstance<JLabel>().map { it.text }
     }
 }

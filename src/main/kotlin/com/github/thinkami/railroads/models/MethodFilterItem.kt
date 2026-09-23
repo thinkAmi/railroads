@@ -32,7 +32,7 @@ fun buildMethodFilterItems(methods: List<String>, selected: MethodFilterItem?): 
     return listOf(MethodFilterItem.ALL) + requestMethods + blank
 }
 
-private fun methodPriority(method: String): Int {
+internal fun methodPriority(method: String): Int {
     val index = PRIORITY_METHODS.indexOf(method)
     return if (index >= 0) index else PRIORITY_METHODS.size
 }
