@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-10-05
+
 - BREAKING CHANGE: Raised the minimum supported IDE version to 2026.2. IDE 2026.1 is no longer supported. ([#128](https://github.com/thinkAmi/railroads/pull/128))
 - Added a filter to narrow the route list by HTTP method, which can be combined with the text filter. ([#128](https://github.com/thinkAmi/railroads/pull/128), [#127](https://github.com/thinkAmi/railroads/issues/127))
 - Added sorting of the route list by clicking a column header, cycling through ascending, descending and the original `rails routes` order. ([#129](https://github.com/thinkAmi/railroads/pull/129), [#127](https://github.com/thinkAmi/railroads/issues/127))
@@ -64,7 +66,8 @@
 
 - fix `pluginUntilBuild` to `Disable`
 
-[Unreleased]: https://github.com/thinkAmi/railroads/compare/0.7.0...HEAD
+[Unreleased]: https://github.com/thinkAmi/railroads/compare/0.8.0...HEAD
+[0.8.0]: https://github.com/thinkAmi/railroads/compare/0.7.0...0.8.0
 [0.7.0]: https://github.com/thinkAmi/railroads/compare/0.6.0...0.7.0
 [0.6.0]: https://github.com/thinkAmi/railroads/compare/0.5.1...0.6.0
 [0.5.1]: https://github.com/thinkAmi/railroads/compare/0.5.0...0.5.1
