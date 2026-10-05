@@ -77,13 +77,6 @@ dependencies {
 
         testFramework(TestFrameworkType.Platform)
     }
-
-    // railroads plugin dependencies
-    val junitVersion = "5.14.4"
-    testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:${junitVersion}")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
-    testRuntimeOnly("org.junit.vintage:junit-vintage-engine:${junitVersion}")
 }
 
 // Configure IntelliJ Platform Gradle Plugin - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-extension.html
