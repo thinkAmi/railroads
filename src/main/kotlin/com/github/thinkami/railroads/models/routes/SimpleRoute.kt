@@ -35,8 +35,8 @@ class SimpleRoute(
     init {
         // Run RailsAction.update() and the snapshot computation inside the same read action so
         // that PSI is observed at a consistent point in time. RailsAction.update() also wraps
-        // in ReadAction.run internally; nested read actions are safe in the IntelliJ Platform.
-        ReadAction.run<RuntimeException> {
+        // in ReadAction.runBlocking internally; nested read actions are safe in the IntelliJ Platform.
+        ReadAction.runBlocking<RuntimeException> {
             railsAction.update(module, controllerName, actionName)
             recomputeSnapshotInternal()
         }

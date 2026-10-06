@@ -19,7 +19,7 @@ class RailsAction {
 
     fun update(module: Module, controllerName: String, actionName: String) {
         // Since RailsApp.fromModule also interacts with the PSI/Project model, it should be included within ReadAction.
-        ReadAction.run<RuntimeException> {
+        ReadAction.runBlocking<RuntimeException> {
             val app = RailsApp.fromModule(module)
             update(app, controllerName, actionName)
         }

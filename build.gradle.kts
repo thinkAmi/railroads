@@ -3,6 +3,7 @@ import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.intellij.platform.gradle.extensions.IntelliJPlatformDependenciesExtension
 import org.jetbrains.intellij.platform.gradle.models.ProductRelease
+import org.jetbrains.kotlin.gradle.dsl.JvmDefaultMode
 import java.io.FileInputStream
 import java.util.Properties
 
@@ -42,6 +43,10 @@ version = providers.gradleProperty("version").get()
 // Set the JVM language level used to build the project.
 kotlin {
     jvmToolchain(21)
+
+    compilerOptions {
+        jvmDefault.set(JvmDefaultMode.NO_COMPATIBILITY)
+    }
 }
 
 dependencies {
@@ -100,8 +105,8 @@ intellijPlatform {
         ideaVersion {
             sinceBuild = providers.gradleProperty("railroadsMinimumIdeBuild")
 
-            // Note: For Railroads, since no conditions are specified, pluginUntilBuild remains undefined.
-            untilBuild = provider { null }
+            // Note: until-build is limited to the 2026.2 (262) branch.
+            untilBuild = "262.*"
         }
     }
 
