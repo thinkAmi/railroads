@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [0.8.1] - 2026-10-06
+
 - Limited compatibility to the IDE 2026.2 branch. IDE 2026.3 and later are not supported by this version. ([#138](https://github.com/thinkAmi/railroads/pull/138))
 - This version includes the following changes from 0.8.0, which was not published to JetBrains Marketplace:
   - BREAKING CHANGE: Raised the minimum supported IDE version to 2026.2. IDE 2026.1 is no longer supported. ([#128](https://github.com/thinkAmi/railroads/pull/128))
@@ -72,7 +74,8 @@
 
 - fix `pluginUntilBuild` to `Disable`
 
-[Unreleased]: https://github.com/thinkAmi/railroads/compare/0.8.0...HEAD
+[Unreleased]: https://github.com/thinkAmi/railroads/compare/0.8.1...HEAD
+[0.8.1]: https://github.com/thinkAmi/railroads/compare/0.8.0...0.8.1
 [0.8.0]: https://github.com/thinkAmi/railroads/compare/0.7.0...0.8.0
 [0.7.0]: https://github.com/thinkAmi/railroads/compare/0.6.0...0.7.0
 [0.6.0]: https://github.com/thinkAmi/railroads/compare/0.5.1...0.6.0
