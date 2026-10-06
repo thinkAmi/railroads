@@ -19,8 +19,8 @@ It does not cover:
 - GitHub Releases `Immutable Releases` is enabled.
 - The default branch is `main`.
 - GitHub Actions workflows are enabled.
-- `/Users/thinkami/project/railroads/.github/workflows/build.yml` runs on `main` pushes and creates draft releases.
-- `/Users/thinkami/project/railroads/.github/workflows/release.yml` runs on `release` events (`prereleased`, `released`).
+- `.github/workflows/build.yml` runs on `main` pushes and creates draft releases.
+- `.github/workflows/release.yml` runs on `release` events (`prereleased`, `released`).
 
 ## Required secrets
 The following repository secrets must be configured:
@@ -42,8 +42,8 @@ The following repository secrets must be configured:
 8. The `Release` workflow runs `publishPlugin` and opens a changelog update PR.
 
 ## Standard release procedure
-1. Update `version` in `/Users/thinkami/project/railroads/gradle.properties`.
-2. Update unreleased notes in `/Users/thinkami/project/railroads/CHANGELOG.md`.
+1. Update `version` in `gradle.properties`.
+2. Update unreleased notes in `CHANGELOG.md`.
 3. Merge to `main`.
 4. Confirm the `Build` workflow succeeded.
 5. Open the target draft release and confirm:
