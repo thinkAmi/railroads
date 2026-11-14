@@ -39,13 +39,15 @@ class RailsAction {
             psiMethod = null
         }
 
+        val findController = PsiUtil.railsControllerFinder(app)
+
         if (psiClass == null) {
-            psiClass = PsiUtil.findControllerClass(app, qualifiedName)
+            psiClass = PsiUtil.findControllerClassForRoute(app.project, controllerShortName, findController)
         }
 
         if (psiClass != null) {
             if (psiMethod == null || !psiMethod!!.isValid) {
-                psiMethod = PsiUtil.findControllerMethod(app, psiClass!!, actionName)
+                psiMethod = PsiUtil.findControllerMethod(app.project, psiClass!!, actionName, findController)
             }
         } else {
             // (railways)

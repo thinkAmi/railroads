@@ -26,17 +26,43 @@ class PsiUtil {
             return getControllerClassPathByShortName(shortName).joinToString("::")
         }
 
-        fun findControllerClass(app: RailsApp, qualifiedClassName: String): RClass? {
+        /**
+         * Returns a controller lookup backed by the Rails support of the Ruby plugin.
+         */
+        fun railsControllerFinder(app: RailsApp): (String) -> RClass? = { name ->
+            app.findController(name)?.rClass
+        }
+
+        /**
+         * Finds the controller class of a route, such as `admin/users` of `admin/users#index`.
+         *
+         * [findController] is the controller lookup of the Rails support. It is a parameter so that
+         * tests can run without a Rails application, where `RailsApp.fromModule()` returns null.
+         */
+        fun findControllerClassForRoute(
+            project: Project,
+            controllerShortName: String,
+            findController: (String) -> RClass?
+        ): RClass? {
+            val qualifiedName = getControllerClassNameByShortName(controllerShortName)
+            return findControllerClass(project, qualifiedName, findController)
+        }
+
+        fun findControllerClass(
+            project: Project,
+            qualifiedClassName: String,
+            findController: (String) -> RClass?
+        ): RClass? {
             if (qualifiedClassName.isBlank()) {
                 return null
             }
 
-            val controller = app.findController(qualifiedClassName)
+            val controller = findController(qualifiedClassName)
             if (controller != null) {
-                return controller.rClass
+                return controller
             }
 
-            val container = findClassOrModule(qualifiedClassName, app.project)
+            val container = findClassOrModule(qualifiedClassName, project)
 
             return if (container is RClass) container else null
         }
@@ -63,7 +89,12 @@ class PsiUtil {
             return null
         }
 
-        fun findControllerMethod(app: RailsApp, controllerClass: RClass, methodName: String): RMethod? {
+        fun findControllerMethod(
+            project: Project,
+            controllerClass: RClass,
+            methodName: String,
+            findController: (String) -> RClass?
+        ): RMethod? {
             var currentClass = controllerClass
 
             while (true) {
@@ -83,7 +114,7 @@ class PsiUtil {
                     return null
                 }
 
-                currentClass = findControllerClass(app, psiParentRef.name!!) ?: return null
+                currentClass = findControllerClass(project, psiParentRef.name!!, findController) ?: return null
             }
         }
 
