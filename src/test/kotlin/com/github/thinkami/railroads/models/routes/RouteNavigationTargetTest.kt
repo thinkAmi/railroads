@@ -6,6 +6,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import junit.framework.TestCase
 import org.jetbrains.plugins.ruby.ruby.lang.psi.controlStructures.classes.RClass
+import org.jetbrains.plugins.ruby.ruby.lang.psi.controlStructures.methods.RMethod
 import org.jetbrains.plugins.ruby.ruby.lang.psi.holders.RContainer
 import java.io.File
 
@@ -63,19 +64,33 @@ class RouteNavigationTargetTest : BasePlatformTestCase() {
         )
     }
 
-    fun testActionOfControllerWithAcronymNamespace() {
-        // The route gives api/users, while the class is API::UsersController.
-        assertTarget("api/users#index", "API::UsersController", "API::UsersController#index")
+    fun testActionOfControllerWithAcronymNamespaceWithoutRailsSupport() {
+        // The route gives api/users, while the class is API::UsersController. Only the Rails support
+        // knows the acronym, so the name built without it does not match.
+        assertTarget("api/users#index", null, null)
+    }
+
+    fun testActionOfControllerFoundByRailsSupport() {
+        // Stand-in for the Rails support with `inflect.acronym 'API'`.
+        val railsSupport: (String) -> RClass? = { name ->
+            if (name == "api/users") PsiUtil.findClassOrModule("API::UsersController", project) as? RClass else null
+        }
+
+        val (controllerClass, method) = resolve("api/users#index", railsSupport)
+
+        TestCase.assertEquals("API::UsersController", controllerClass?.fqnWithNesting?.fullPath)
+        TestCase.assertEquals("API::UsersController#index", describe(method))
     }
 
     fun testUnknownController() {
         assertTarget("ghosts#index", null, null)
     }
 
-    fun testControllerLookupReceivesCamelizedName() {
-        resolve("api/users#index")
+    fun testControllerLookupReceivesRoutePathOnly() {
+        // The superclass is looked up by its class name, not through the controller lookup.
+        resolve("users#inherited_action")
 
-        TestCase.assertEquals("Api::UsersController", requestedControllerNames.first())
+        TestCase.assertEquals(listOf("users"), requestedControllerNames)
     }
 
     fun testMountedEngineClass() {
@@ -93,18 +108,20 @@ class RouteNavigationTargetTest : BasePlatformTestCase() {
         val (controllerClass, method) = resolve(controllerAction)
 
         TestCase.assertEquals("class of $controllerAction", expectedClass, controllerClass?.fqnWithNesting?.fullPath)
-        val actualMethod = method?.let {
-            val owner = PsiTreeUtil.getParentOfType(it, RContainer::class.java)
-            "${owner?.fqnWithNesting?.fullPath}#${it.methodName?.name}"
-        }
-        TestCase.assertEquals("method of $controllerAction", expectedMethod, actualMethod)
+        TestCase.assertEquals("method of $controllerAction", expectedMethod, describe(method))
     }
 
-    private fun resolve(controllerAction: String) = findRoute(controllerAction).let { route ->
-        val controllerClass = PsiUtil.findControllerClassForRoute(project, route.controllerName, recordingFinder)
-        val method = controllerClass?.let {
-            PsiUtil.findControllerMethod(project, it, route.actionName, recordingFinder)
-        }
+    private fun describe(method: RMethod?): String? = method?.let {
+        val owner = PsiTreeUtil.getParentOfType(it, RContainer::class.java)
+        "${owner?.fqnWithNesting?.fullPath}#${it.methodName?.name}"
+    }
+
+    private fun resolve(
+        controllerAction: String,
+        findController: (String) -> RClass? = recordingFinder
+    ) = findRoute(controllerAction).let { route ->
+        val controllerClass = PsiUtil.findControllerClassForRoute(project, route.controllerName, findController)
+        val method = controllerClass?.let { PsiUtil.findControllerMethod(project, it, route.actionName) }
         Pair(controllerClass, method)
     }
 

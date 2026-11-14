@@ -47,7 +47,7 @@ class RailsAction {
 
         if (psiClass != null) {
             if (psiMethod == null || !psiMethod!!.isValid) {
-                psiMethod = PsiUtil.findControllerMethod(app.project, psiClass!!, actionName, findController)
+                psiMethod = PsiUtil.findControllerMethod(app.project, psiClass!!, actionName)
             }
         } else {
             // (railways)

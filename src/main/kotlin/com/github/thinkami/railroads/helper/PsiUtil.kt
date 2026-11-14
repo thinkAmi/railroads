@@ -1,18 +1,18 @@
 package com.github.thinkami.railroads.helper
 
 import com.intellij.openapi.project.Project
-import com.intellij.psi.search.GlobalSearchScope
-import com.intellij.psi.stubs.StubIndex
 import com.intellij.psi.util.PsiElementFilter
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.plugins.ruby.rails.facet.RailsApp
-import org.jetbrains.plugins.ruby.ruby.codeInsight.resolve.scope.RElementWithFQN
+import org.jetbrains.plugins.ruby.ruby.codeInsight.RubyFQNUtil
+import org.jetbrains.plugins.ruby.ruby.codeInsight.symbols.Type
+import org.jetbrains.plugins.ruby.ruby.codeInsight.symbols.TypeSet
+import org.jetbrains.plugins.ruby.ruby.codeInsight.symbols.fqn.FQN
 import org.jetbrains.plugins.ruby.ruby.lang.psi.RubyPsiUtil
 import org.jetbrains.plugins.ruby.ruby.lang.psi.controlStructures.classes.RClass
 import org.jetbrains.plugins.ruby.ruby.lang.psi.controlStructures.methods.RMethod
 import org.jetbrains.plugins.ruby.ruby.lang.psi.controlStructures.modules.RModule
 import org.jetbrains.plugins.ruby.ruby.lang.psi.holders.RContainer
-import org.jetbrains.plugins.ruby.ruby.lang.psi.indexes.RubyClassModuleNameIndex
 import org.jetbrains.plugins.ruby.ruby.lang.psi.methodCall.RCall
 import org.jetbrains.plugins.ruby.utils.NamingConventions
 
@@ -21,6 +21,8 @@ class PsiUtil {
         private val INCLUDE_MODULE_FILTER = PsiElementFilter {
             (it is RCall) && (it as RCall).command == "include"
         }
+
+        private val CLASS_MODULE_TYPES = TypeSet(Type.CLASS, Type.MODULE)
 
         fun getControllerClassNameByShortName(shortName: String): String {
             return getControllerClassPathByShortName(shortName).joinToString("::")
@@ -44,57 +46,30 @@ class PsiUtil {
             controllerShortName: String,
             findController: (String) -> RClass?
         ): RClass? {
-            val qualifiedName = getControllerClassNameByShortName(controllerShortName)
-            return findControllerClass(project, qualifiedName, findController)
-        }
-
-        fun findControllerClass(
-            project: Project,
-            qualifiedClassName: String,
-            findController: (String) -> RClass?
-        ): RClass? {
-            if (qualifiedClassName.isBlank()) {
+            if (controllerShortName.isBlank()) {
                 return null
             }
 
-            val controller = findController(qualifiedClassName)
+            // The Rails support takes the controller path of the route and applies the inflection
+            // rules of the application, such as acronyms, when it builds the class name.
+            val controller = findController(controllerShortName)
             if (controller != null) {
                 return controller
             }
 
-            val container = findClassOrModule(qualifiedClassName, project)
-
-            return if (container is RClass) container else null
+            val qualifiedName = getControllerClassNameByShortName(controllerShortName)
+            return findClassOrModule(qualifiedName, project) as? RClass
         }
 
         fun findClassOrModule(qualifiedName: String, project: Project) : RContainer? {
-            val classPath = qualifiedName.split("::")
-            val className = classPath[classPath.size - 1]
-
-            val items = findClassesAndModules(className, project)
-
-            for (item in items) {
-                // `fqn.fullPath` causes Rails routing to fail, so use `fqnWithNesting.fullPath` instead.
-                // Rails routing example: /rails/conductor/action_mailbox/inbound_emails
-                val name = item.fqnWithNesting.fullPath
-
-                // The StubIndex can return non-RContainer elements such as RConstantImpl
-                // (e.g. when `include SomeConstant` references a non-module constant).
-                // Skip them to avoid ClassCastException.
-                if (qualifiedName.equals(name, ignoreCase = true) && item is RContainer) {
-                    return item
-                }
+            if (qualifiedName.isBlank()) {
+                return null
             }
 
-            return null
+            return RubyFQNUtil.findContainerByFQN(project, CLASS_MODULE_TYPES, FQN.of(qualifiedName), null)
         }
 
-        fun findControllerMethod(
-            project: Project,
-            controllerClass: RClass,
-            methodName: String,
-            findController: (String) -> RClass?
-        ): RMethod? {
+        fun findControllerMethod(project: Project, controllerClass: RClass, methodName: String): RMethod? {
             var currentClass = controllerClass
 
             while (true) {
@@ -114,7 +89,7 @@ class PsiUtil {
                     return null
                 }
 
-                currentClass = findControllerClass(project, psiParentRef.name!!, findController) ?: return null
+                currentClass = findClassOrModule(psiParentRef.name!!, project) as? RClass ?: return null
             }
         }
 
@@ -123,13 +98,6 @@ class PsiUtil {
             return classPath.map {
                 NamingConventions.toCamelCase(it)
             }
-        }
-
-        private fun findClassesAndModules(name: String, project: Project): Collection<RElementWithFQN> {
-            // Since IDE 2025.2, the `RubyProjectAndLibrariesScope` have been no longer available, so we should use the equivalent `GlobalSearchScope.allScope` instead.
-            val scope = GlobalSearchScope.allScope(project)
-
-            return StubIndex.getElements(RubyClassModuleNameIndex.KEY, name, project, scope, RElementWithFQN::class.java)
         }
 
         private fun findMethodInClassModules(controllerClass: RClass, methodName: String): RMethod? {

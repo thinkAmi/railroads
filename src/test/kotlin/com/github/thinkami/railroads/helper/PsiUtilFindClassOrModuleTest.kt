@@ -53,8 +53,10 @@ class PsiUtilFindClassOrModuleTest : BasePlatformTestCase() {
         assertFound("API::UsersController", RClass::class.java, "API::UsersController")
     }
 
-    fun testFindsClassWhoseNameDiffersOnlyInCase() {
-        assertFound("Api::UsersController", RClass::class.java, "API::UsersController")
+    fun testReturnsNullForClassWhoseNameDiffersOnlyInCase() {
+        // Qualified names are compared case-sensitively. Controllers with acronyms in their names are
+        // found by the Rails support, which applies the inflection rules of the application.
+        assertNotFound("Api::UsersController")
     }
 
     fun testReturnsNullForClassInAnotherNamespace() {
