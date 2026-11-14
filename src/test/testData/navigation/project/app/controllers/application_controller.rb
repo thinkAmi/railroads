@@ -1,6 +1,4 @@
-class ApplicationController
-  protect_from_forgery with: :exception
-
+class ApplicationController < ActionController::Base
   def inherited_action
   end
 end
