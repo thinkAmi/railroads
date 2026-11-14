@@ -40,10 +40,9 @@ plugins {
 group = providers.gradleProperty("group").get()
 version = providers.gradleProperty("version").get()
 
-// Set the JVM language level used to build the project.
+// The Java toolchain follows the Java version required by the target IntelliJ Platform,
+// which the IntelliJ Platform Gradle Plugin sets by default.
 kotlin {
-    jvmToolchain(21)
-
     compilerOptions {
         jvmDefault.set(JvmDefaultMode.NO_COMPATIBILITY)
     }
