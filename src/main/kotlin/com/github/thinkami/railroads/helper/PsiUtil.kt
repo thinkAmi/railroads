@@ -5,7 +5,7 @@ import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.stubs.StubIndex
 import com.intellij.psi.util.PsiElementFilter
 import com.intellij.psi.util.PsiTreeUtil
-import org.jetbrains.plugins.ruby.rails.model.RailsApp
+import org.jetbrains.plugins.ruby.rails.facet.RailsApp
 import org.jetbrains.plugins.ruby.ruby.codeInsight.resolve.scope.RElementWithFQN
 import org.jetbrains.plugins.ruby.ruby.lang.psi.RubyPsiUtil
 import org.jetbrains.plugins.ruby.ruby.lang.psi.controlStructures.classes.RClass

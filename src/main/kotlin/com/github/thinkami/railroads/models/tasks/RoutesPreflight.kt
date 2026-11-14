@@ -6,7 +6,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.modules
 import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.openapi.roots.ModuleRootManager
-import org.jetbrains.plugins.ruby.rails.model.RailsApp
+import org.jetbrains.plugins.ruby.rails.facet.RailsApp
 
 internal sealed interface RoutesPreflightResult {
     data object NoModule : RoutesPreflightResult
