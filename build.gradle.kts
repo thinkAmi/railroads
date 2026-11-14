@@ -104,8 +104,8 @@ intellijPlatform {
         ideaVersion {
             sinceBuild = providers.gradleProperty("railroadsMinimumIdeBuild")
 
-            // Note: until-build is limited to the 2026.2 (262) branch.
-            untilBuild = "262.*"
+            // Note: For Railroads, since no conditions are specified, pluginUntilBuild remains undefined.
+            untilBuild = provider { null }
         }
     }
 
