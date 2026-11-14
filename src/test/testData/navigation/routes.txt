@@ -1,0 +1,10 @@
+                        Prefix Verb URI Pattern                                              Controller#Action
+                         users GET  /users(.:format)                                         users#index
+               inherited_users GET  /users/inherited(.:format)                               users#inherited_action
+                  search_users GET  /users/search(.:format)                                  users#search
+                 missing_users GET  /users/missing(.:format)                                 users#missing
+                  admin_report GET  /admin/reports/:id(.:format)                             admin/reports#show
+           edit_admin_settings GET  /admin/settings/edit(.:format)                           admin/settings#edit
+                     api_users GET  /api/users(.:format)                                     api/users#index
+rails_conductor_inbound_emails GET  /rails/conductor/action_mailbox/inbound_emails(.:format) rails/conductor/action_mailbox/inbound_emails#index
+                        ghosts GET  /ghosts(.:format)                                        ghosts#index
