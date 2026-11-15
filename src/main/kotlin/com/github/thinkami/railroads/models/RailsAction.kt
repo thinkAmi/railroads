@@ -6,7 +6,7 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.util.Computable
-import org.jetbrains.plugins.ruby.rails.model.RailsApp
+import org.jetbrains.plugins.ruby.rails.facet.RailsApp
 import org.jetbrains.plugins.ruby.ruby.lang.psi.controlStructures.classes.RClass
 import org.jetbrains.plugins.ruby.ruby.lang.psi.controlStructures.methods.RMethod
 import org.jetbrains.plugins.ruby.ruby.lang.psi.controlStructures.methods.Visibility
@@ -39,13 +39,15 @@ class RailsAction {
             psiMethod = null
         }
 
+        val findController = PsiUtil.railsControllerFinder(app)
+
         if (psiClass == null) {
-            psiClass = PsiUtil.findControllerClass(app, qualifiedName)
+            psiClass = PsiUtil.findControllerClassForRoute(app.project, controllerShortName, findController)
         }
 
         if (psiClass != null) {
             if (psiMethod == null || !psiMethod!!.isValid) {
-                psiMethod = PsiUtil.findControllerMethod(app, psiClass!!, actionName)
+                psiMethod = PsiUtil.findControllerMethod(app.project, psiClass!!, actionName)
             }
         } else {
             // (railways)

@@ -6,8 +6,8 @@ import com.github.thinkami.railroads.models.routes.MountedEngineRoute
 import com.github.thinkami.railroads.models.routes.RedirectRoute
 import com.github.thinkami.railroads.models.routes.SimpleRoute
 import com.intellij.openapi.module.Module
-import io.ktor.utils.io.errors.*
 import java.io.DataInputStream
+import java.io.IOException
 import java.io.InputStream
 import java.util.regex.Matcher
 import java.util.regex.Pattern
