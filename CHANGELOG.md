@@ -4,6 +4,9 @@
 
 ## [Unreleased]
 
+- BREAKING CHANGE: Raised the minimum supported IDE version to 2026.3. IDE 2026.2 is no longer supported; Railroads 0.8.1 remains available for it. ([#142](https://github.com/thinkAmi/railroads/pull/142))
+- Added support for IDE 2026.3. As before 0.8.1, this version sets no upper limit on the compatible IDE version. ([#142](https://github.com/thinkAmi/railroads/pull/142))
+
 ## [0.8.1] - 2026-10-06
 
 - Limited compatibility to the IDE 2026.2 branch. IDE 2026.3 and later are not supported by this version. ([#138](https://github.com/thinkAmi/railroads/pull/138))
