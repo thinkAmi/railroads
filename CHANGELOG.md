@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-11-15
+
 - BREAKING CHANGE: Raised the minimum supported IDE version to 2026.3. IDE 2026.2 is no longer supported; Railroads 0.8.1 remains available for it. ([#142](https://github.com/thinkAmi/railroads/pull/142))
 - Added support for IDE 2026.3. As before 0.8.1, this version sets no upper limit on the compatible IDE version. ([#142](https://github.com/thinkAmi/railroads/pull/142))
 
@@ -77,16 +79,17 @@
 
 - fix `pluginUntilBuild` to `Disable`
 
-[Unreleased]: https://github.com/thinkAmi/railroads/compare/0.8.1...HEAD
-[0.8.1]: https://github.com/thinkAmi/railroads/compare/0.8.0...0.8.1
-[0.8.0]: https://github.com/thinkAmi/railroads/compare/0.7.0...0.8.0
-[0.7.0]: https://github.com/thinkAmi/railroads/compare/0.6.0...0.7.0
-[0.6.0]: https://github.com/thinkAmi/railroads/compare/0.5.1...0.6.0
-[0.5.1]: https://github.com/thinkAmi/railroads/compare/0.5.0...0.5.1
-[0.5.0]: https://github.com/thinkAmi/railroads/compare/0.4.2...0.5.0
-[0.4.2]: https://github.com/thinkAmi/railroads/compare/0.4.0...0.4.2
-[0.4.0]: https://github.com/thinkAmi/railroads/compare/0.3.0...0.4.0
-[0.3.0]: https://github.com/thinkAmi/railroads/compare/0.2.1...0.3.0
-[0.2.1]: https://github.com/thinkAmi/railroads/compare/0.1.0...0.2.1
-[0.1.1]: https://github.com/thinkAmi/railroads/commits/0.1.1
-[0.1.0]: https://github.com/thinkAmi/railroads/compare/0.1.1...0.1.0
+[Unreleased]: https://github.com/thinkAmi/railroads/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/thinkAmi/railroads/compare/v0.8.1...v0.9.0
+[0.8.1]: https://github.com/thinkAmi/railroads/compare/v0.8.0...v0.8.1
+[0.8.0]: https://github.com/thinkAmi/railroads/compare/v0.7.0...v0.8.0
+[0.7.0]: https://github.com/thinkAmi/railroads/compare/v0.6.0...v0.7.0
+[0.6.0]: https://github.com/thinkAmi/railroads/compare/v0.5.1...v0.6.0
+[0.5.1]: https://github.com/thinkAmi/railroads/compare/v0.5.0...v0.5.1
+[0.5.0]: https://github.com/thinkAmi/railroads/compare/v0.4.2...v0.5.0
+[0.4.2]: https://github.com/thinkAmi/railroads/compare/v0.4.0...v0.4.2
+[0.4.0]: https://github.com/thinkAmi/railroads/compare/v0.3.0...v0.4.0
+[0.3.0]: https://github.com/thinkAmi/railroads/compare/v0.2.1...v0.3.0
+[0.2.1]: https://github.com/thinkAmi/railroads/compare/v0.1.0...v0.2.1
+[0.1.1]: https://github.com/thinkAmi/railroads/commits/v0.1.1
+[0.1.0]: https://github.com/thinkAmi/railroads/compare/v0.1.1...v0.1.0
